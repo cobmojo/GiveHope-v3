@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -156,7 +157,17 @@ const QuickGiveRow: React.FC<{
   );
 };
 
-export const DonorQuickGive = () => {
+interface DonorQuickGiveProps {
+  className?: string;
+  variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+  children?: React.ReactNode;
+}
+
+export const DonorQuickGive: React.FC<DonorQuickGiveProps> = ({ 
+  className, 
+  variant = "default",
+  children
+}) => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -174,10 +185,18 @@ export const DonorQuickGive = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button 
-          className="bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 shadow-sm h-10 px-5 rounded-full font-bold group transition-all hover:shadow-md hover:border-slate-300"
+          variant={variant}
+          className={cn(
+            "bg-white hover:bg-slate-50 text-slate-900 border border-slate-200 shadow-sm h-10 px-5 rounded-full font-bold group transition-all hover:shadow-md hover:border-slate-300",
+            className
+          )}
         >
-          <Heart className="mr-2 h-4 w-4 fill-rose-500 text-rose-500 group-hover:scale-110 transition-transform duration-300" /> 
-          Quick Give
+          {children || (
+            <>
+              <Heart className="mr-2 h-4 w-4 fill-rose-500 text-rose-500 group-hover:scale-110 transition-transform duration-300" /> 
+              Quick Give
+            </>
+          )}
         </Button>
       </DialogTrigger>
       

@@ -26,6 +26,7 @@ import {
 import { 
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow 
 } from "../../components/ui/Table";
+import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/Avatar';
 import { Select } from "../../components/ui/Select";
 import { ResponsiveContainer, BarChart, Bar, Tooltip as RechartsTooltip, XAxis, Cell, CartesianGrid } from 'recharts';
 
@@ -48,14 +49,110 @@ interface Transaction {
 // --- Mock Data ---
 
 const TRANSACTIONS: Transaction[] = [
-  { id: 'TX-10492', date: '2024-10-24T10:30:00', amount: 100.00, recipient: 'The Miller Family', category: 'Missionary', type: 'Recurring', method: 'Visa', last4: '4242', status: 'Succeeded', receiptUrl: '#' },
-  { id: 'TX-10491', date: '2024-09-24T10:30:00', amount: 100.00, recipient: 'The Miller Family', category: 'Missionary', type: 'Recurring', method: 'Visa', last4: '4242', status: 'Succeeded', receiptUrl: '#' },
-  { id: 'TX-10355', date: '2024-09-12T14:15:00', amount: 500.00, recipient: 'Clean Water Initiative', category: 'Project', type: 'One-Time', method: 'Mastercard', last4: '8821', status: 'Succeeded', receiptUrl: '#' },
-  { id: 'TX-10290', date: '2024-08-24T10:30:00', amount: 100.00, recipient: 'The Miller Family', category: 'Missionary', type: 'Recurring', method: 'Visa', last4: '4242', status: 'Succeeded', receiptUrl: '#' },
-  { id: 'TX-10210', date: '2024-07-24T10:30:00', amount: 100.00, recipient: 'The Miller Family', category: 'Missionary', type: 'Recurring', method: 'Visa', last4: '4242', status: 'Succeeded', receiptUrl: '#' },
-  { id: 'TX-10150', date: '2024-06-15T09:00:00', amount: 250.00, recipient: 'Refugee Crisis Fund', category: 'Emergency', type: 'One-Time', method: 'Bank', last4: '9921', status: 'Processing', receiptUrl: '#' },
-  { id: 'TX-9982', date: '2024-05-24T10:30:00', amount: 100.00, recipient: 'The Miller Family', category: 'Missionary', type: 'Recurring', method: 'Visa', last4: '4242', status: 'Failed', receiptUrl: '#' },
-  { id: 'TX-9840', date: '2024-04-10T16:20:00', amount: 1000.00, recipient: 'Building Fund', category: 'Capital', type: 'One-Time', method: 'Check', last4: '1024', status: 'Succeeded', receiptUrl: '#' },
+  { 
+    id: 'TX-10492', 
+    date: '2024-10-24T10:30:00', 
+    amount: 100.00, 
+    recipient: 'The Miller Family', 
+    recipientAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?fit=facearea&facepad=2&w=256&h=256&q=80',
+    category: 'Missionary', 
+    type: 'Recurring', 
+    method: 'Visa', 
+    last4: '4242', 
+    status: 'Succeeded', 
+    receiptUrl: '#' 
+  },
+  { 
+    id: 'TX-10491', 
+    date: '2024-09-24T10:30:00', 
+    amount: 100.00, 
+    recipient: 'The Miller Family', 
+    recipientAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?fit=facearea&facepad=2&w=256&h=256&q=80',
+    category: 'Missionary', 
+    type: 'Recurring', 
+    method: 'Visa', 
+    last4: '4242', 
+    status: 'Succeeded', 
+    receiptUrl: '#' 
+  },
+  { 
+    id: 'TX-10355', 
+    date: '2024-09-12T14:15:00', 
+    amount: 500.00, 
+    recipient: 'Clean Water Initiative', 
+    recipientAvatar: 'https://images.unsplash.com/photo-1538300342682-cf57afb97285?fit=crop&w=256&h=256&q=80',
+    category: 'Project', 
+    type: 'One-Time', 
+    method: 'Mastercard', 
+    last4: '8821', 
+    status: 'Succeeded', 
+    receiptUrl: '#' 
+  },
+  { 
+    id: 'TX-10290', 
+    date: '2024-08-24T10:30:00', 
+    amount: 100.00, 
+    recipient: 'The Miller Family', 
+    recipientAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?fit=facearea&facepad=2&w=256&h=256&q=80',
+    category: 'Missionary', 
+    type: 'Recurring', 
+    method: 'Visa', 
+    last4: '4242', 
+    status: 'Succeeded', 
+    receiptUrl: '#' 
+  },
+  { 
+    id: 'TX-10210', 
+    date: '2024-07-24T10:30:00', 
+    amount: 100.00, 
+    recipient: 'The Miller Family', 
+    recipientAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?fit=facearea&facepad=2&w=256&h=256&q=80',
+    category: 'Missionary', 
+    type: 'Recurring', 
+    method: 'Visa', 
+    last4: '4242', 
+    status: 'Succeeded', 
+    receiptUrl: '#' 
+  },
+  { 
+    id: 'TX-10150', 
+    date: '2024-06-15T09:00:00', 
+    amount: 250.00, 
+    recipient: 'Refugee Crisis Fund', 
+    recipientAvatar: 'https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?fit=crop&w=256&h=256&q=80',
+    category: 'Emergency', 
+    type: 'One-Time', 
+    method: 'Bank', 
+    last4: '9921', 
+    status: 'Processing', 
+    receiptUrl: '#' 
+  },
+  { 
+    id: 'TX-9982', 
+    date: '2024-05-24T10:30:00', 
+    amount: 100.00, 
+    recipient: 'The Miller Family', 
+    recipientAvatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?fit=facearea&facepad=2&w=256&h=256&q=80',
+    category: 'Missionary', 
+    type: 'Recurring', 
+    method: 'Visa', 
+    last4: '4242', 
+    status: 'Failed', 
+    receiptUrl: '#' 
+  },
+  { 
+    id: 'TX-9840', 
+    date: '2024-04-10T16:20:00', 
+    amount: 1000.00, 
+    recipient: 'Building Fund', 
+    recipientAvatar: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?fit=crop&w=256&h=256&q=80',
+    category: 'Capital', 
+    type: 'One-Time', 
+    method: 'Check', 
+    last4: '1024', 
+    status: 'Succeeded', 
+    receiptUrl: '#' 
+  },
 ];
 
 const MONTHLY_DATA = [
@@ -328,9 +425,12 @@ export const DonorHistory: React.FC = () => {
                               {/* Recipient */}
                               <div className="md:col-span-4 md:px-0 mb-2 md:mb-0">
                                  <div className="flex items-center gap-3">
-                                    <div className="h-9 w-9 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold text-xs border border-slate-200">
-                                       {tx.recipient[0]}
-                                    </div>
+                                    <Avatar className="h-9 w-9 border border-slate-200">
+                                        <AvatarImage src={tx.recipientAvatar} alt={tx.recipient} />
+                                        <AvatarFallback className="bg-slate-100 text-slate-500 font-bold text-xs">
+                                            {tx.recipient[0]}
+                                        </AvatarFallback>
+                                    </Avatar>
                                     <div>
                                        <div className="text-sm font-bold text-slate-900 leading-none mb-1">{tx.recipient}</div>
                                        <div className="text-xs text-slate-500 flex items-center gap-1.5">

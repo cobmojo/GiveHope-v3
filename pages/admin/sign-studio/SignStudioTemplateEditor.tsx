@@ -87,6 +87,7 @@ export const SignStudioTemplateEditor = () => {
     offsetX: number; 
     offsetY: number; 
   } | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
 
   const canvasRef = useRef<HTMLDivElement>(null);
 
@@ -177,13 +178,26 @@ export const SignStudioTemplateEditor = () => {
     e.dataTransfer.effectAllowed = 'copy';
   };
 
+  const handleCanvasDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleCanvasDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragOver(false);
+  };
+
   const handleCanvasDragOver = (e: React.DragEvent) => {
     e.preventDefault(); 
     e.dataTransfer.dropEffect = 'copy';
+    if (!isDragOver) setIsDragOver(true);
   };
 
   const handleCanvasDrop = (e: React.DragEvent) => {
     e.preventDefault();
+    setIsDragOver(false);
     const type = e.dataTransfer.getData('fieldType') as FieldType;
     if (!type || !canvasRef.current) return;
 
@@ -429,7 +443,10 @@ export const SignStudioTemplateEditor = () => {
           
           <div 
             ref={canvasRef}
-            className="bg-white shadow-2xl transition-transform duration-200 ease-out relative ring-1 ring-slate-300 origin-top"
+            className={cn(
+              "bg-white shadow-2xl transition-all duration-200 ease-out relative ring-1 ring-slate-300 select-none origin-top",
+              (isDragOver || dragStartInfo) && "ring-2 ring-blue-500 bg-blue-50/30"
+            )}
             style={{ 
               width: `${595 * (zoom / 100)}px`, 
               height: `${842 * (zoom / 100)}px`,
@@ -438,6 +455,8 @@ export const SignStudioTemplateEditor = () => {
             }}
             onClick={() => setSelectedFieldId(null)}
             onDragOver={handleCanvasDragOver}
+            onDragEnter={handleCanvasDragEnter}
+            onDragLeave={handleCanvasDragLeave}
             onDrop={handleCanvasDrop}
           >
             {/* Document Preview */}

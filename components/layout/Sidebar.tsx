@@ -66,10 +66,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ type }) => {
 
   return (
     <aside className="hidden w-64 flex-col border-r bg-card md:flex h-screen sticky top-0">
-      <div className="flex h-14 items-center border-b px-4 font-bold text-lg tracking-tight">
-        {type === 'admin' && 'Mission Control'}
-        {type === 'worker' && 'Field Worker Portal'}
-        {type === 'donor' && 'Donor Portal'}
+      <div className="flex h-16 items-center border-b px-4">
+        {type === 'admin' ? (
+          <div className="flex items-center gap-3">
+             <div className="h-9 w-9 bg-slate-900 text-white rounded-md flex items-center justify-center font-bold text-lg tracking-tighter shadow-sm shrink-0">
+                GH
+             </div>
+             <div className="flex flex-col justify-center">
+                <span className="font-bold text-sm tracking-tight text-slate-900 leading-none">
+                  GIVE<span className="font-light opacity-60">HOPE</span>
+                </span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mt-1">
+                  Mission Control
+                </span>
+             </div>
+          </div>
+        ) : (
+           <div className="font-bold text-lg tracking-tight">
+             {type === 'worker' && 'Field Worker Portal'}
+             {type === 'donor' && 'Donor Portal'}
+           </div>
+        )}
       </div>
       <nav className="flex-1 overflow-y-auto py-4">
         <ul className="space-y-1 px-2">

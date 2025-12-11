@@ -25,6 +25,8 @@ import { SignStudioPublicSigning } from './pages/public/SignStudioPublicSigning'
 // Admin Pages
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { SupportHub } from './pages/admin/SupportHub';
+import { EmailStudio } from './pages/admin/EmailStudio';
+import { PDFStudio } from './pages/admin/PDFStudio';
 import { SignStudioDocuments } from './pages/admin/sign-studio/SignStudioDocuments';
 import { SignStudioNewDocument } from './pages/admin/sign-studio/SignStudioNewDocument';
 import { SignStudioTemplates } from './pages/admin/sign-studio/SignStudioTemplates';
@@ -102,6 +104,10 @@ const App: React.FC = () => {
         <Route path="/mission-control" element={<AppShell type="admin"><Outlet /></AppShell>}>
           <Route index element={<AdminDashboard />} />
           
+          {/* Studios */}
+          <Route path="email-studio" element={<EmailStudio />} />
+          <Route path="pdf-studio" element={<PDFStudio />} />
+
           {/* Sign Studio Module */}
           <Route path="sign-studio">
             <Route index element={<SignStudioDocuments />} />
@@ -120,8 +126,6 @@ const App: React.FC = () => {
           <Route path="web-studio" element={<PlaceholderPage title="Web Studio" />} />
           <Route path="crm" element={<PlaceholderPage title="CRM" />} />
           <Route path="contributions" element={<PlaceholderPage title="Contributions Hub" />} />
-          <Route path="email-studio" element={<PlaceholderPage title="Email Studio" />} />
-          <Route path="pdf-studio" element={<PlaceholderPage title="PDF Studio" />} />
           <Route path="report-studio" element={<PlaceholderPage title="Report Studio" />} />
           <Route path="mobilize" element={<PlaceholderPage title="Mobilize" />} />
           <Route path="events" element={<PlaceholderPage title="Events & Conferences" />} />

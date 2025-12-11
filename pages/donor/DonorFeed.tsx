@@ -1,9 +1,11 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   Heart, MessageCircle, MoreHorizontal, 
   Share2, Bookmark, Globe, Sparkles, Send,
-  Repeat, ImageOff, Wand2
+  Repeat, ImageOff, Wand2, Link as LinkIcon,
+  Facebook, Twitter, Linkedin, Mail, Check,
+  BookmarkCheck
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/Avatar';
@@ -11,13 +13,14 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
 import { 
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator 
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel 
 } from '../../components/ui/DropdownMenu';
 import { cn } from '../../lib/utils';
 import { GoogleGenAI } from "@google/genai";
 
 // --- Types ---
-type PostType = 'All' | 'Update' | 'Prayer' | 'Story' | 'Video';
+type ContentType = 'Update' | 'Prayer' | 'Story' | 'Video';
+type FilterType = 'All' | 'Saved' | ContentType;
 
 interface Comment {
   id: string;
@@ -38,7 +41,7 @@ interface Post {
   location: string;
   time: string;
   readTime?: string;
-  type: Exclude<PostType, 'All'>;
+  type: ContentType;
   title?: string;
   content: string; // HTML allowed
   images?: string[];
@@ -77,7 +80,8 @@ const MOCK_POSTS: Post[] = [
     comments: [
       { id: 'c1', author: 'Jane Doe', avatar: '', text: 'This is incredible news! So happy for them. 🙌', time: '1h ago', likes: 4 },
       { id: 'c2', author: 'Robert Fox', authorTitle: 'Monthly Partner', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=60', text: 'Praise God! Worth every penny.', time: '30m ago', likes: 2 }
-    ]
+    ],
+    saved: true
   },
   {
     id: 2,
@@ -134,10 +138,10 @@ const FeedFilter = ({
   current, 
   onChange 
 }: { 
-  current: string; 
-  onChange: (val: PostType) => void; 
+  current: FilterType; 
+  onChange: (val: FilterType) => void; 
 }) => {
-  const filters: PostType[] = ['All', 'Update', 'Prayer', 'Story', 'Video'];
+  const filters: FilterType[] = ['All', 'Update', 'Prayer', 'Story', 'Video', 'Saved'];
   
   return (
     <div className="sticky top-[56px] z-30 bg-slate-50/90 backdrop-blur-xl border-b border-slate-200/50 py-4 mb-8 transition-all">
@@ -147,12 +151,13 @@ const FeedFilter = ({
             key={type}
             onClick={() => onChange(type)}
             className={cn(
-              "px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 border select-none whitespace-nowrap",
+              "px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 border select-none whitespace-nowrap flex items-center gap-2",
               current === type
                 ? "bg-slate-900 text-white border-slate-900 shadow-lg hover:shadow-xl transform scale-[1.02]"
                 : "bg-white text-slate-600 border-slate-200/60 hover:bg-slate-50 hover:border-slate-300 hover:text-slate-900 shadow-sm"
             )}
           >
+            {type === 'Saved' && <BookmarkCheck className={cn("w-3.5 h-3.5", current === type ? "text-white" : "text-slate-400")} />}
             {type}
           </button>
         ))}
@@ -164,14 +169,36 @@ const FeedFilter = ({
 const PostActions = ({ 
   post, 
   onLike, 
-  onPray, 
+  onPray,
+  onSave,
   onToggleComments 
 }: { 
   post: Post; 
   onLike: () => void; 
   onPray: () => void; 
+  onSave: () => void;
   onToggleComments: () => void; 
 }) => {
+  const [copied, setCopied] = useState(false);
+  const shareUrl = `https://givehope.app/posts/${post.id}`; // Mock URL
+  const shareText = `Check out this update from ${post.workerName} on GiveHope!`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleNativeShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: post.title || 'Update from GiveHope',
+        text: shareText,
+        url: shareUrl,
+      }).catch(console.error);
+    }
+  };
+
   return (
     <div className="flex items-center justify-between py-2 mt-8">
       <div className="flex items-center gap-2">
@@ -212,16 +239,52 @@ const PostActions = ({
       <div className="flex items-center gap-1">
         <motion.button 
           whileTap={{ scale: 0.9 }}
-          className="p-2.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
+          onClick={onSave}
+          className={cn(
+            "p-2.5 rounded-full transition-colors",
+            post.saved ? "text-blue-600 bg-blue-50" : "text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+          )}
+          title={post.saved ? "Remove from bookmarks" : "Save this post"}
         >
-          <Bookmark className="h-5 w-5" strokeWidth={1.5} />
+          <Bookmark className={cn("h-5 w-5 transition-all", post.saved ? "fill-current scale-110" : "")} strokeWidth={1.5} />
         </motion.button>
-        <motion.button 
-          whileTap={{ scale: 0.9 }}
-          className="p-2.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
-        >
-          <Share2 className="h-5 w-5" strokeWidth={1.5} />
-        </motion.button>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <motion.button 
+              whileTap={{ scale: 0.9 }}
+              className="p-2.5 text-slate-400 hover:text-slate-900 hover:bg-slate-100 rounded-full transition-colors"
+            >
+              <Share2 className="h-5 w-5" strokeWidth={1.5} />
+            </motion.button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel>Share Update</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            {typeof navigator !== 'undefined' && navigator.share && (
+               <DropdownMenuItem onClick={handleNativeShare}>
+                 <Share2 className="mr-2 h-4 w-4" /> Share via...
+               </DropdownMenuItem>
+            )}
+            <DropdownMenuItem onClick={handleCopyLink}>
+              {copied ? <Check className="mr-2 h-4 w-4 text-green-600" /> : <LinkIcon className="mr-2 h-4 w-4" />}
+              {copied ? "Copied!" : "Copy Link"}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank')}>
+              <Facebook className="mr-2 h-4 w-4 text-blue-600" /> Facebook
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`, '_blank')}>
+              <Twitter className="mr-2 h-4 w-4 text-sky-500" /> X / Twitter
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank')}>
+              <Linkedin className="mr-2 h-4 w-4 text-blue-700" /> LinkedIn
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => window.open(`mailto:?subject=${encodeURIComponent(post.title || 'Update from GiveHope')}&body=${encodeURIComponent(shareText + '\n\n' + shareUrl)}`)}>
+              <Mail className="mr-2 h-4 w-4" /> Email
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );
@@ -369,11 +432,13 @@ const PostCard: React.FC<{
   post: Post; 
   onLike: (id: number) => void; 
   onPray: (id: number) => void; 
+  onSave: (id: number) => void;
   onAddComment: (id: number, text: string) => void; 
 }> = ({ 
   post, 
   onLike, 
   onPray, 
+  onSave,
   onAddComment 
 }) => {
   const [showComments, setShowComments] = useState(false);
@@ -384,11 +449,12 @@ const PostCard: React.FC<{
 
   return (
     <motion.article 
+      layout
       initial={{ opacity: 0, y: 30 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className="bg-white mb-12 last:mb-0"
+      className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 overflow-hidden hover:shadow-md transition-shadow duration-300"
     >
       {/* Meta Header */}
       <div className="flex items-center justify-between mb-6">
@@ -469,6 +535,7 @@ const PostCard: React.FC<{
         post={post} 
         onLike={() => onLike(post.id)}
         onPray={() => onPray(post.id)}
+        onSave={() => onSave(post.id)}
         onToggleComments={() => setShowComments(!showComments)}
       />
 
@@ -481,17 +548,20 @@ const PostCard: React.FC<{
           />
         )}
       </AnimatePresence>
-      
-      <div className="h-px w-full bg-slate-100 mt-12" />
     </motion.article>
   );
 };
 
 export const DonorFeed = () => {
-  const [filter, setFilter] = useState<PostType>('All');
+  const [filter, setFilter] = useState<FilterType>('All');
   const [posts, setPosts] = useState<Post[]>(MOCK_POSTS);
 
-  const filteredPosts = filter === 'All' ? posts : posts.filter(p => p.type === filter);
+  // --- Filter Logic ---
+  const filteredPosts = useMemo(() => {
+    if (filter === 'All') return posts;
+    if (filter === 'Saved') return posts.filter(p => p.saved);
+    return posts.filter(p => p.type === filter);
+  }, [posts, filter]);
 
   // --- Handlers ---
   const handleLike = (id: number) => {
@@ -503,6 +573,12 @@ export const DonorFeed = () => {
   const handlePray = (id: number) => {
     setPosts(prev => prev.map(p => 
       p.id === id ? { ...p, prayers: p.prayed ? p.prayers - 1 : p.prayers + 1, prayed: !p.prayed } : p
+    ));
+  };
+
+  const handleSave = (id: number) => {
+    setPosts(prev => prev.map(p => 
+      p.id === id ? { ...p, saved: !p.saved } : p
     ));
   };
 
@@ -537,7 +613,7 @@ export const DonorFeed = () => {
       <FeedFilter current={filter} onChange={setFilter} />
 
       {/* Feed Stream */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         <AnimatePresence mode='popLayout'>
           {filteredPosts.map((post) => (
             <PostCard 
@@ -545,6 +621,7 @@ export const DonorFeed = () => {
               post={post}
               onLike={handleLike}
               onPray={handlePray}
+              onSave={handleSave}
               onAddComment={handleAddComment}
             />
           ))}
@@ -553,10 +630,24 @@ export const DonorFeed = () => {
         {filteredPosts.length === 0 && (
           <div className="py-32 text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-50 text-slate-300 mb-6">
-              <Sparkles className="h-10 w-10" />
+              {filter === 'Saved' ? (
+                <BookmarkCheck className="h-10 w-10" />
+              ) : (
+                <Sparkles className="h-10 w-10" />
+              )}
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">No updates found</h3>
-            <p className="text-slate-500 max-w-xs mx-auto">Try changing the filter or check back later for new stories.</p>
+            <h3 className="text-xl font-bold text-slate-900 mb-2">No posts found</h3>
+            <p className="text-slate-500 max-w-xs mx-auto">
+              {filter === 'Saved' 
+                ? "You haven't bookmarked any updates yet. Tap the bookmark icon on any post to save it here."
+                : "Try changing the filter or check back later for new stories."
+              }
+            </p>
+            {filter === 'Saved' && (
+              <Button variant="link" onClick={() => setFilter('All')} className="mt-2">
+                Browse All Updates
+              </Button>
+            )}
           </div>
         )}
       </div>

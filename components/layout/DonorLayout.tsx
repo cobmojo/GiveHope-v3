@@ -14,7 +14,9 @@ import {
   ChevronDown,
   Bell,
   Heart,
-  Wallet
+  Wallet,
+  ShieldCheck,
+  HelpCircle
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/Avatar';
@@ -50,12 +52,11 @@ export const DonorLayout: React.FC = () => {
   }, [location]);
 
   const tabs = [
-    { name: 'Dashboard', href: '/donor-portal', icon: LayoutDashboard, exact: true },
+    { name: 'Partner Dashboard', href: '/donor-portal', icon: LayoutDashboard, exact: true },
     { name: 'My Feed', href: '/donor-portal/feed', icon: Rss },
-    { name: 'Wallet', href: '/donor-portal/wallet', icon: Wallet },
+    { name: 'Payment Methods', href: '/donor-portal/wallet', icon: Wallet },
     { name: 'History', href: '/donor-portal/history', icon: History },
     { name: 'Pledges', href: '/donor-portal/recurring', icon: CreditCard },
-    { name: 'Settings', href: '/donor-portal/settings', icon: Settings },
   ];
 
   return (
@@ -73,19 +74,24 @@ export const DonorLayout: React.FC = () => {
         <div className="container mx-auto px-4 md:px-8">
           <div className="flex items-center justify-between h-14">
              
-             {/* LEFT: Logo */}
-             <div className="flex items-center gap-8">
-                 <Link to="/" className="flex items-center gap-2 group relative z-50">
-                    <div className="h-9 w-9 bg-slate-950 text-white rounded-lg flex items-center justify-center font-bold text-lg tracking-tighter shadow-sm group-hover:scale-105 transition-transform duration-300">
-                        GH
-                    </div>
-                    <span className="font-bold text-xl tracking-tight text-slate-950 hidden md:block">
-                      GIVE<span className="font-light opacity-60">HOPE</span>
-                    </span>
-                 </Link>
+             {/* LEFT: Logo & Context */}
+             <div className="flex items-center gap-6">
+                 <div className="flex items-center gap-4">
+                   <Link to="/" className="flex items-center gap-2 group relative z-50">
+                      <div className="h-9 w-9 bg-slate-950 text-white rounded-lg flex items-center justify-center font-bold text-lg tracking-tighter shadow-sm group-hover:scale-105 transition-transform duration-300">
+                          GH
+                      </div>
+                      <div className="flex flex-col -space-y-1">
+                        <span className="font-bold text-xl tracking-tight text-slate-950">
+                          GIVE<span className="font-light opacity-60">HOPE</span>
+                        </span>
+                        <span className="text-[10px] font-medium text-slate-500 tracking-widest uppercase">Partner Portal</span>
+                      </div>
+                   </Link>
+                 </div>
 
                  {/* DESKTOP NAV */}
-                 <nav className="hidden md:flex items-center gap-1">
+                 <nav className="hidden xl:flex items-center gap-1">
                     {tabs.map((tab) => {
                       const isActive = tab.exact 
                         ? location.pathname === tab.href 
@@ -161,8 +167,8 @@ export const DonorLayout: React.FC = () => {
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link to="/donor-portal/history" className="cursor-pointer">
-                              <History className="mr-2 h-4 w-4" /> Billing History
+                            <Link to="/faq" className="cursor-pointer">
+                              <HelpCircle className="mr-2 h-4 w-4" /> Help & Support
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -175,7 +181,7 @@ export const DonorLayout: React.FC = () => {
 
                  {/* Mobile Menu Toggle */}
                  <button 
-                    className="md:hidden p-2 text-slate-600"
+                    className="xl:hidden p-2 text-slate-600"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                  >
                     {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -191,9 +197,12 @@ export const DonorLayout: React.FC = () => {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white border-b border-slate-100 overflow-hidden"
+              className="xl:hidden bg-white border-b border-slate-100 overflow-hidden"
             >
               <div className="container mx-auto px-4 py-4 space-y-2">
+                <div className="px-4 pb-2">
+                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Menu</span>
+                </div>
                 {tabs.map((tab) => {
                    const isActive = tab.exact 
                    ? location.pathname === tab.href 

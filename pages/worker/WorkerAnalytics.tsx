@@ -1,9 +1,12 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
+import { Progress } from '../../components/ui/Progress';
 import { formatCurrency } from '../../lib/utils';
-import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Users, Repeat } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Users, Repeat, Target, Activity } from 'lucide-react';
+
+// --- Mock Data ---
 
 const donationData = [
   { month: 'Jan', amount: 2400 },
@@ -25,11 +28,27 @@ const donorTypeData = [
   { name: 'One-Time', value: 55 },
 ];
 
+const engagementData = [
+  { month: 'Jun', new: 12, retained: 140, lapsed: 5 },
+  { month: 'Jul', new: 15, retained: 138, lapsed: 8 },
+  { month: 'Aug', new: 22, retained: 145, lapsed: 4 },
+  { month: 'Sep', new: 18, retained: 155, lapsed: 6 },
+  { month: 'Oct', new: 25, retained: 160, lapsed: 3 },
+  { month: 'Nov', new: 30, retained: 175, lapsed: 5 },
+];
+
+const campaignData = [
+  { name: 'Clean Water Initiative', raised: 12500, goal: 15000, donors: 84, daysLeft: 12 },
+  { name: 'Back to School Drive', raised: 3200, goal: 5000, donors: 45, daysLeft: 20 },
+  { name: 'Emergency Relief Fund', raised: 8900, goal: 8000, donors: 120, daysLeft: 0 }, // Goal met
+  { name: 'General Support', raised: 45000, goal: 60000, donors: 310, daysLeft: 45 },
+];
+
 const COLORS = ['#2563eb', '#94a3b8']; // Blue-600, Slate-400
 
 export const WorkerAnalytics: React.FC = () => {
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <div className="flex items-center justify-between">
          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Analytics & Reports</h1>
          <div className="text-sm text-muted-foreground">Data for last 12 months</div>
@@ -72,16 +91,16 @@ export const WorkerAnalytics: React.FC = () => {
 
         <Card className="border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
           <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity duration-500">
-            <Users className="h-24 w-24 -rotate-12 text-indigo-600" />
+            <Activity className="h-24 w-24 -rotate-12 text-indigo-600" />
           </div>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-            <CardTitle className="text-sm font-medium text-slate-600">New Donors</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-600">Retention Rate</CardTitle>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-2xl font-bold text-slate-900">+12</div>
+            <div className="text-2xl font-bold text-slate-900">88.4%</div>
             <p className="text-xs text-slate-500 flex items-center mt-1">
-               <ArrowDownRight className="h-3 w-3 text-red-500 mr-1" />
-               -2 from last month
+               <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" />
+               +1.2% from last quarter
             </p>
           </CardContent>
         </Card>
@@ -102,14 +121,17 @@ export const WorkerAnalytics: React.FC = () => {
         </Card>
       </div>
 
+      {/* Row 2: Trends & Campaigns */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        
         {/* Main Trend Chart */}
         <Card className="col-span-4 border-slate-200 shadow-sm">
           <CardHeader>
             <CardTitle>Donation Trends</CardTitle>
+            <CardDescription>Monthly giving volume over time</CardDescription>
           </CardHeader>
           <CardContent className="pl-0">
-            <div className="h-[350px] w-full">
+            <div className="h-[320px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={donationData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <defs>
@@ -132,13 +154,76 @@ export const WorkerAnalytics: React.FC = () => {
           </CardContent>
         </Card>
 
-        {/* Breakdown Chart */}
+        {/* Campaign Performance */}
+        <Card className="col-span-3 border-slate-200 shadow-sm flex flex-col">
+            <CardHeader className="pb-2">
+                <CardTitle className="flex items-center gap-2">
+                    <Target className="h-5 w-5 text-slate-500" /> Campaign Goals
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="flex-1 overflow-y-auto">
+                <div className="space-y-6 mt-2">
+                    {campaignData.map((campaign, idx) => {
+                        const percent = Math.min(100, Math.round((campaign.raised / campaign.goal) * 100));
+                        return (
+                            <div key={idx} className="space-y-2">
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <p className="font-semibold text-sm text-slate-900">{campaign.name}</p>
+                                        <p className="text-xs text-slate-500">{campaign.donors} donors • {campaign.daysLeft > 0 ? `${campaign.daysLeft} days left` : 'Completed'}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold text-sm text-slate-900">{percent}%</p>
+                                        <p className="text-xs text-slate-500">{formatCurrency(campaign.raised)} of {formatCurrency(campaign.goal)}</p>
+                                    </div>
+                                </div>
+                                <Progress value={percent} className="h-2" />
+                            </div>
+                        );
+                    })}
+                </div>
+            </CardContent>
+        </Card>
+      </div>
+
+      {/* Row 3: Engagement & Breakdown */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+        
+        {/* Donor Engagement Chart */}
+        <Card className="col-span-4 border-slate-200 shadow-sm">
+            <CardHeader>
+                <CardTitle>Donor Engagement</CardTitle>
+                <CardDescription>New vs. Retained vs. Lapsed donors (6 Month)</CardDescription>
+            </CardHeader>
+            <CardContent className="pl-0">
+                <div className="h-[300px] w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={engagementData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                            <XAxis dataKey="month" fontSize={12} tickLine={false} axisLine={false} stroke="#64748b" />
+                            <YAxis fontSize={12} tickLine={false} axisLine={false} stroke="#64748b" />
+                            <Tooltip 
+                                cursor={{fill: '#f1f5f9'}}
+                                contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0' }} 
+                            />
+                            <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                            <Bar dataKey="retained" name="Retained" stackId="a" fill="#10b981" barSize={32} />
+                            <Bar dataKey="new" name="New" stackId="a" fill="#3b82f6" barSize={32} />
+                            <Bar dataKey="lapsed" name="Lapsed" stackId="a" fill="#cbd5e1" barSize={32} radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
+            </CardContent>
+        </Card>
+
+        {/* Giving Type Pie Chart */}
         <Card className="col-span-3 border-slate-200 shadow-sm">
             <CardHeader>
                 <CardTitle>Giving Type</CardTitle>
+                <CardDescription>Revenue distribution</CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="h-[300px] w-full flex flex-col items-center justify-center">
+                <div className="h-[250px] w-full flex flex-col items-center justify-center">
                      <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                             <Pie
@@ -159,38 +244,13 @@ export const WorkerAnalytics: React.FC = () => {
                             <Legend verticalAlign="bottom" height={36}/>
                         </PieChart>
                      </ResponsiveContainer>
-                     <div className="text-sm text-center text-slate-500 mt-4 px-4">
-                        Recurring donations provide stability, while one-time gifts often spike during campaigns.
+                     <div className="text-sm text-center text-slate-500 px-4 mt-2">
+                        Recurring donations provide stability, accounting for <strong>45%</strong> of volume.
                      </div>
                 </div>
             </CardContent>
         </Card>
       </div>
-      
-      {/* Additional Stats / Table Area */}
-      <Card className="border-slate-200 shadow-sm">
-          <CardHeader>
-              <CardTitle>Top Performing Months</CardTitle>
-          </CardHeader>
-          <CardContent>
-              <div className="space-y-4">
-                  {donationData.sort((a,b) => b.amount - a.amount).slice(0, 3).map((item, idx) => (
-                      <div key={idx} className="flex items-center justify-between border-b border-slate-100 pb-4 last:border-0 last:pb-0">
-                          <div className="flex items-center gap-4">
-                              <div className="h-10 w-10 rounded-full bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
-                                  {idx + 1}
-                              </div>
-                              <div>
-                                  <div className="font-semibold text-slate-900">{item.month}</div>
-                                  <div className="text-xs text-slate-500">High volume period</div>
-                              </div>
-                          </div>
-                          <div className="font-bold text-lg text-slate-900">{formatCurrency(item.amount)}</div>
-                      </div>
-                  ))}
-              </div>
-          </CardContent>
-      </Card>
     </div>
   );
 };

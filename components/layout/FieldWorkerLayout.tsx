@@ -53,7 +53,7 @@ export const FieldWorkerLayout: React.FC = () => {
       />
 
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-white/50 backdrop-blur-sm px-4 sticky top-0 z-20">
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b bg-white/50 backdrop-blur-sm px-4 sticky top-0 z-20 md:hidden">
           <SidebarTrigger className="-ml-1" />
           <Separator orientation="vertical" className="mr-2 h-4" />
           <h2 className="text-sm font-semibold text-slate-900">
@@ -61,7 +61,7 @@ export const FieldWorkerLayout: React.FC = () => {
           </h2>
         </header>
 
-        <main className="flex-1 p-4 md:p-6 lg:p-8 bg-slate-50/50 min-h-[calc(100vh-4rem)]">
+        <main className="flex-1 p-4 md:p-6 lg:p-8 bg-slate-50/50 min-h-[calc(100vh-4rem)] md:min-h-screen">
           {renderContent()}
         </main>
       </SidebarInset>

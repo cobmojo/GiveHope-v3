@@ -26,7 +26,7 @@ import { SidebarUserDropdown } from './SidebarComponents'
 import { Separator } from '../ui/separator'
 
 type NavItem =
-  | { type: 'item', id: string; label: string; icon: LucideIcon }
+  | { type: 'item', id: string, label: string, icon: LucideIcon }
   | { type: 'separator' }
 
 interface FieldworkerSidebarProps {
@@ -62,15 +62,15 @@ export const FieldworkerSidebar: React.FC<FieldworkerSidebarProps> = ({ currentV
     <Sidebar className="bg-white border-r border-slate-200">
       <SidebarHeader className="pb-4">
         <div className="flex items-center gap-3 px-2 py-4">
-          <div className="h-9 w-9 bg-slate-900 text-white rounded-lg shadow-sm flex items-center justify-center shrink-0">
-            <ShieldCheck className="h-5 w-5" />
+          <div className="h-9 w-9 bg-slate-900 text-white rounded-lg flex items-center justify-center font-bold text-lg tracking-tighter shadow-sm shrink-0">
+            GH
           </div>
-          <div className="flex flex-col overflow-hidden group-data-[collapsible=icon]:hidden">
-            <span className="text-sm font-bold tracking-tight truncate text-slate-900">
-              Mission Control
+          <div className="flex flex-col justify-center overflow-hidden group-data-[collapsible=icon]:hidden">
+            <span className="font-bold text-sm tracking-tight text-slate-900 leading-none">
+              GIVE<span className="font-light opacity-60">HOPE</span>
             </span>
-            <span className="text-[11px] text-muted-foreground truncate font-medium">
-              Give Hope
+            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mt-1">
+              Fieldworker Dashboard
             </span>
           </div>
         </div>

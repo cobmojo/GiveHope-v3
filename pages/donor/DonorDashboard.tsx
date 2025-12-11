@@ -15,6 +15,7 @@ import { motion } from 'framer-motion';
 import { MissionBriefing } from '../../components/donor/MissionBriefing';
 import { ImpactTile } from '../../components/donor/ImpactTile';
 import { DashboardSkeleton, Greeting, QuickActionCard } from '../../components/donor/DashboardUI';
+import { DonorQuickGive } from '../../components/feature/DonorQuickGive';
 
 // Data Imports
 import { RECENT_UPDATES, WORKER_FEEDS } from '../../lib/donor-mock';
@@ -51,11 +52,8 @@ export const DonorDashboard: React.FC = () => {
             <p className="text-slate-500 font-medium text-lg">Thank you for your partnership.</p>
          </div>
          <div className="flex gap-3 w-full md:w-auto">
-           <Button variant="outline" className="flex-1 md:flex-none h-10 rounded-full border-slate-200 text-slate-700 font-semibold bg-white hover:bg-slate-50" asChild>
+           <Button variant="outline" className="flex-1 md:flex-none h-10 rounded-full border-slate-200 text-slate-700 font-semibold bg-white hover:bg-slate-50 shadow-sm" asChild>
               <Link to="/donor-portal/history"><FileText className="mr-2 h-4 w-4"/> Tax Receipt</Link>
-           </Button>
-           <Button className="flex-1 md:flex-none h-10 rounded-full bg-slate-900 hover:bg-slate-800 text-white font-semibold shadow-md" asChild>
-              <Link to="/workers">Give Support</Link>
            </Button>
          </div>
       </motion.div>
@@ -237,6 +235,7 @@ export const DonorDashboard: React.FC = () => {
       <div className="pt-12 border-t border-slate-200 flex flex-col md:flex-row justify-between items-center text-xs text-slate-400 gap-4 font-medium">
          <p>© 2024 GiveHope Humanitarian.</p>
          <div className="flex gap-6">
+            <Link to="/donor-portal/settings" className="hover:text-slate-600 transition-colors">Settings</Link>
             <a href="#" className="hover:text-slate-600 transition-colors">Privacy</a>
             <a href="#" className="hover:text-slate-600 transition-colors">Terms</a>
             <a href="#" className="hover:text-slate-600 transition-colors">Support</a>
