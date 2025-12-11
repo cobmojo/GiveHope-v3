@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { FieldworkerSidebar } from '../sidebar/FieldworkerSidebar';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '../ui/sidebar';
@@ -10,7 +11,6 @@ import { WorkerAnalytics } from '../../pages/worker/WorkerAnalytics';
 import { WorkerDonors } from '../../pages/worker/WorkerDonors';
 import { WorkerGifts } from '../../pages/worker/WorkerGifts';
 import { WorkerTasks } from '../../pages/worker/WorkerTasks';
-import { WorkerPages } from '../../pages/worker/WorkerPages';
 import { WorkerContent } from '../../pages/worker/WorkerContent';
 import { WorkerEmailStudio } from '../../pages/worker/WorkerEmailStudio';
 import { WorkerSettings } from '../../pages/worker/WorkerSettings';
@@ -25,7 +25,7 @@ export const FieldWorkerLayout: React.FC = () => {
     donors: 'My Donors',
     pledges: 'My Gifts',
     tasks: 'Tasks',
-    content: 'Content & Pages',
+    content: 'Content & Profile',
     email: 'Email Studio',
     settings: 'Settings'
   };
@@ -38,7 +38,7 @@ export const FieldWorkerLayout: React.FC = () => {
           case 'donors': return <WorkerDonors />;
           case 'pledges': return <WorkerGifts />;
           case 'tasks': return <WorkerTasks />;
-          case 'content': return <WorkerPages />; 
+          case 'content': return <WorkerContent />; 
           case 'email': return <WorkerEmailStudio />;
           case 'settings': return <WorkerSettings />;
           default: return <div className="p-8 text-center text-muted-foreground">Module coming soon...</div>;
