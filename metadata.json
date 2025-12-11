@@ -1,0 +1,8 @@
+{
+  "name": "GiveHope v2",
+  "description": "GiveHope Humanitarian Platform - Connecting donors directly to field needs.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera"
+  ]
+}
