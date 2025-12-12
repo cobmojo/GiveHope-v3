@@ -5,10 +5,12 @@ import {
   ArrowLeft, MoreHorizontal, Download, Plus, User, 
   History, Check, Copy, ArrowUpRight,
   Pencil, Trash2, Heart, MessageSquare, Briefcase, 
-  Clock, CheckCircle2, AlertCircle, Send, Star, ExternalLink
+  Clock, CheckCircle2, AlertCircle, Send, Star, ExternalLink,
+  Brain, Sparkles, Lightbulb, Zap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { format, formatDistanceToNow } from 'date-fns';
+import { GoogleGenAI } from "@google/genai";
 
 // UI Components
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/Card';
@@ -232,6 +234,10 @@ export const WorkerDonors = () => {
   const [activeTab, setActiveTab] = useState('timeline');
   const [noteInput, setNoteInput] = useState('');
   const [isNoteDialogOpen, setIsNoteDialogOpen] = useState(false);
+  
+  // AI Analysis State
+  const [aiAnalysis, setAiAnalysis] = useState<{ persona: string; strategy: string; nextMove: string; } | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   // Filter Logic
   const filteredDonors = useMemo(() => {
@@ -260,6 +266,11 @@ export const WorkerDonors = () => {
     DONORS_DATA.find(d => d.id === selectedDonorId), 
   [selectedDonorId]);
 
+  // Reset analysis when donor changes
+  React.useEffect(() => {
+    setAiAnalysis(null);
+  }, [selectedDonorId]);
+
   // Actions
   const handleAddNote = () => {
       console.log(`Adding note to donor ${selectedDonorId}: ${noteInput}`);
@@ -270,6 +281,54 @@ export const WorkerDonors = () => {
   const handleCopy = (text: string) => {
       navigator.clipboard.writeText(text);
   }
+
+  const analyzeDonorRelationship = async () => {
+    if (!selectedDonor) return;
+    setIsAnalyzing(true);
+    setAiAnalysis(null);
+
+    try {
+        const apiKey = process.env.API_KEY;
+        if (!apiKey) {
+            // Mock Fallback
+            await new Promise(r => setTimeout(r, 1500));
+            setAiAnalysis({
+                persona: "The Community Builder",
+                strategy: "Values personal connection and tangible project updates. Responds well to stories about specific individuals.",
+                nextMove: "Send a photo update of the roof construction mentioned in your last meeting."
+            });
+            setIsAnalyzing(false);
+            return;
+        }
+
+        const ai = new GoogleGenAI({ apiKey });
+        const context = {
+            name: selectedDonor.name,
+            totalGiven: selectedDonor.totalGiven,
+            history: selectedDonor.activities.map(a => `${a.date}: ${a.type} - ${a.title} (${a.description || ''})`),
+            tags: selectedDonor.tags
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Analyze this donor data JSON: ${JSON.stringify(context)}.
+            Identify 3 things:
+            1. 'persona': A 2-3 word psychological profile (e.g. The Impact Investor).
+            2. 'strategy': 1 sentence on how to best communicate with them.
+            3. 'nextMove': A specific, tactical next step for the fundraiser.
+            Return ONLY valid JSON format.`
+        });
+
+        const text = response.text?.replace(/```json/g, '').replace(/```/g, '').trim();
+        if (text) {
+            setAiAnalysis(JSON.parse(text));
+        }
+    } catch (e) {
+        console.error("AI Analysis Failed", e);
+    } finally {
+        setIsAnalyzing(false);
+    }
+  };
 
   return (
     <div className="flex h-[calc(100vh-5rem)] w-full bg-slate-50/50 animate-in fade-in duration-300 relative overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
@@ -404,6 +463,20 @@ export const WorkerDonors = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2">
+                <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className={cn(
+                        "h-9 text-xs font-semibold gap-2 border border-purple-100 bg-purple-50 text-purple-700 hover:bg-purple-100 hover:text-purple-800 shadow-sm",
+                        isAnalyzing && "opacity-80"
+                    )}
+                    onClick={analyzeDonorRelationship}
+                    disabled={isAnalyzing}
+                >
+                  <Brain className={cn("h-3.5 w-3.5", isAnalyzing && "animate-pulse")} /> 
+                  {isAnalyzing ? "Analyzing..." : "Analyze DNA"}
+                </Button>
+                <Separator orientation="vertical" className="h-6 mx-1" />
                 <Button variant="outline" size="sm" className="hidden sm:flex h-9 text-xs font-semibold gap-2 border-slate-200 shadow-sm hover:bg-slate-50" onClick={() => setIsNoteDialogOpen(true)}>
                   <Pencil className="h-3.5 w-3.5" /> Note
                 </Button>
@@ -413,23 +486,6 @@ export const WorkerDonors = () => {
                 <Button size="sm" className="h-9 text-xs font-semibold gap-2 bg-slate-900 text-white shadow-md hover:bg-slate-800">
                   <Mail className="h-3.5 w-3.5" /> Email
                 </Button>
-                <Separator orientation="vertical" className="h-6 mx-1" />
-                <DropdownMenu>
-                   <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-9 w-9 text-slate-500 hover:text-slate-900">
-                         <MoreHorizontal className="h-5 w-5" />
-                      </Button>
-                   </DropdownMenuTrigger>
-                   <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Manage Partner</DropdownMenuLabel>
-                      <DropdownMenuItem>Edit Contact Info</DropdownMenuItem>
-                      <DropdownMenuItem>Manage Tags</DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-red-600 focus:text-red-600">
-                         <Trash2 className="mr-2 h-4 w-4" /> Archive Partner
-                      </DropdownMenuItem>
-                   </DropdownMenuContent>
-                </DropdownMenu>
               </div>
             </div>
 
@@ -503,6 +559,50 @@ export const WorkerDonors = () => {
                       </Card>
                    </div>
                 </motion.div>
+
+                {/* AI Analysis Card */}
+                <AnimatePresence>
+                    {aiAnalysis && (
+                        <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
+                        >
+                            <div className="relative rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 to-indigo-50 p-6 shadow-sm">
+                                <div className="absolute top-0 right-0 p-3 opacity-10">
+                                    <Brain className="h-24 w-24 text-purple-900" />
+                                </div>
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Sparkles className="h-5 w-5 text-purple-600 fill-purple-200" />
+                                        <h3 className="text-sm font-bold text-purple-900 uppercase tracking-widest">Relationship Intelligence</h3>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div className="bg-white/60 p-4 rounded-lg border border-purple-100 backdrop-blur-sm">
+                                            <div className="flex items-center gap-2 mb-2 text-purple-800 font-semibold text-xs uppercase tracking-wider">
+                                                <User className="h-3.5 w-3.5" /> Giving Persona
+                                            </div>
+                                            <p className="font-bold text-slate-800 text-lg">{aiAnalysis.persona}</p>
+                                        </div>
+                                        <div className="bg-white/60 p-4 rounded-lg border border-purple-100 backdrop-blur-sm">
+                                            <div className="flex items-center gap-2 mb-2 text-purple-800 font-semibold text-xs uppercase tracking-wider">
+                                                <Lightbulb className="h-3.5 w-3.5" /> Strategy
+                                            </div>
+                                            <p className="text-sm text-slate-700 leading-relaxed">{aiAnalysis.strategy}</p>
+                                        </div>
+                                        <div className="bg-white/60 p-4 rounded-lg border border-purple-100 backdrop-blur-sm">
+                                            <div className="flex items-center gap-2 mb-2 text-purple-800 font-semibold text-xs uppercase tracking-wider">
+                                                <Zap className="h-3.5 w-3.5" /> Next Move
+                                            </div>
+                                            <p className="text-sm text-slate-700 leading-relaxed font-medium">{aiAnalysis.nextMove}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Main Content Tabs */}
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

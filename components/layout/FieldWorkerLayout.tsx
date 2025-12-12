@@ -1,8 +1,9 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FieldworkerSidebar } from '../sidebar/FieldworkerSidebar';
 import { SidebarProvider, SidebarTrigger, SidebarInset } from '../ui/sidebar';
 import { Separator } from '../ui/separator';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 // Views
 import { WorkerDashboard } from '../../pages/worker/WorkerDashboard';
@@ -16,7 +17,28 @@ import { WorkerEmailStudio } from '../../pages/worker/WorkerEmailStudio';
 import { WorkerSettings } from '../../pages/worker/WorkerSettings';
 
 export const FieldWorkerLayout: React.FC = () => {
-  const [currentView, setCurrentView] = useState<string>('dashboard');
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Initialize view from URL or default to dashboard
+  const getInitialView = () => {
+    const path = location.pathname.split('/').pop();
+    // specific check to avoid matching 'worker-dashboard' itself if trailing slash or clean url
+    if (path === 'worker-dashboard') return 'dashboard';
+    return path || 'dashboard';
+  };
+
+  const [currentView, setCurrentView] = useState<string>(getInitialView());
+
+  // Sync state with URL changes (e.g. back button)
+  useEffect(() => {
+    const path = location.pathname.split('/').pop();
+    if (path && path !== 'worker-dashboard') {
+      setCurrentView(path);
+    } else {
+      setCurrentView('dashboard');
+    }
+  }, [location.pathname]);
 
   const viewTitles: Record<string, string> = {
     dashboard: 'Dashboard',
@@ -37,19 +59,26 @@ export const FieldWorkerLayout: React.FC = () => {
           case 'analytics': return <WorkerAnalytics />;
           case 'donors': return <WorkerDonors />;
           case 'pledges': return <WorkerGifts />;
+          case 'gifts': return <WorkerGifts />; // Handle alias
           case 'tasks': return <WorkerTasks />;
           case 'content': return <WorkerContent />; 
           case 'email': return <WorkerEmailStudio />;
+          case 'email-studio': return <WorkerEmailStudio />; // Handle alias
           case 'settings': return <WorkerSettings />;
-          default: return <div className="p-8 text-center text-muted-foreground">Module coming soon...</div>;
+          default: return <WorkerDashboard />;
       }
+  };
+
+  const handleNavigation = (view: string) => {
+    setCurrentView(view);
+    navigate(`/worker-dashboard/${view}`);
   };
 
   return (
     <SidebarProvider>
       <FieldworkerSidebar 
         currentView={currentView}
-        onNavigate={(view) => setCurrentView(view)}
+        onNavigate={handleNavigation}
       />
 
       <SidebarInset>

@@ -7,8 +7,23 @@ export const EmailStudio = () => {
     alert("Email template saved successfully.");
   };
 
-  const handleExport = () => {
-    alert("Exporting HTML...");
+  const handleExport = (type: string) => {
+    switch(type) {
+        case 'html':
+            alert("Exporting HTML package...");
+            break;
+        case 'mailchimp':
+            alert("Connecting to Mailchimp API...");
+            break;
+        case 'json':
+            alert("Downloading template JSON...");
+            break;
+        case 'pdf':
+            alert("Generating PDF preview...");
+            break;
+        default:
+            console.log("Unknown export type");
+    }
   };
 
   return (

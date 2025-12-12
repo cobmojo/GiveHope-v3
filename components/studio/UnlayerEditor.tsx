@@ -9,14 +9,22 @@ import {
   Layout,
   UserCheck, Grid, PieChart, QrCode, ListStart, FileDown, BadgeCheck, Users2,
   Copy, Plus, Move, CreditCard, AlertCircle, CheckCircle, Info, Target, Footprints, Calendar, Megaphone, Share2, Quote, User, ChevronDown, LayoutTemplate,
-  Wand2
+  Wand2, Sparkles, RefreshCcw, Bot, MessageSquarePlus, Palette, Heart, Mail
 } from 'lucide-react';
 import { Button } from '../ui/Button';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '../ui/Tabs';
 import { Input } from '../ui/Input';
 import { Label } from '../ui/Label';
 import { Slider } from '../ui/Slider';
+import { Textarea } from '../ui/Textarea';
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '../ui/DropdownMenu';
 import { cn } from '../../lib/utils';
+import { GoogleGenAI } from "@google/genai";
 
 // --- Types ---
 
@@ -81,111 +89,6 @@ const PRESETS: Preset[] = [
     ]
   },
   {
-    id: 'director_note',
-    label: 'Director Note',
-    icon: UserCheck,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="background-color: #f8fafc; padding: 30px; border-radius: 8px; border: 1px solid #e2e8f0;">
-          <div style="display: flex; align-items: flex-start; gap: 20px;">
-            <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" alt="Director" />
-            <div>
-              <h3 style="margin: 0 0 10px; font-family: serif; font-size: 20px; color: #1e293b;">A Note from Sarah</h3>
-              <p style="margin: 0 0 15px; font-size: 15px; line-height: 1.6; color: #475569;">"I wanted to personally thank you for your generosity this month. Because of you, we were able to launch the new mobile clinic three weeks ahead of schedule. The impact is already visible on the faces of the families we serve."</p>
-              <p style="margin: 5px 0 0; font-size: 12px; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Executive Director</p>
-            </div>
-          </div>
-        </div>
-      ` }, styles: { padding: '10px 0' } }
-    ]
-  },
-  {
-    id: 'photo_mosaic',
-    label: 'Photo Mosaic',
-    icon: Grid,
-    blocks: [
-      { type: 'html', content: { html: `
-        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          <tr>
-            <td width="50%" style="padding: 5px;">
-              <img src="https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?w=400&h=300&fit=crop" style="width: 100%; border-radius: 6px; display: block;" />
-            </td>
-            <td width="50%" style="padding: 5px;">
-              <img src="https://images.unsplash.com/photo-1594708767771-a7502209ff51?w=400&h=300&fit=crop" style="width: 100%; border-radius: 6px; display: block;" />
-            </td>
-          </tr>
-          <tr>
-            <td colspan="2" style="padding: 5px;">
-              <img src="https://images.unsplash.com/photo-1531206715517-5c0ba140b2b8?w=800&h=400&fit=crop" style="width: 100%; border-radius: 6px; display: block;" />
-              <p style="text-align: center; font-size: 13px; color: #64748b; margin-top: 8px; font-style: italic;">Field operations in Kenya, October 2024</p>
-            </td>
-          </tr>
-        </table>
-      ` }, styles: { padding: '15px 0' } }
-    ]
-  },
-  {
-    id: 'story_feature',
-    label: 'Feature Story',
-    icon: Columns,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="display: flex; gap: 20px; align-items: center; flex-wrap: wrap;">
-          <div style="flex: 1; min-width: 250px;">
-            <img src="https://images.unsplash.com/photo-1594708767771-a7502209ff51?w=600&auto=format&fit=crop" style="width: 100%; border-radius: 8px; display: block;" alt="Story" />
-          </div>
-          <div style="flex: 1; min-width: 250px;">
-            <h3 style="margin: 0 0 10px 0; font-size: 20px; color: #1e293b; font-weight: bold;">A New Beginning</h3>
-            <p style="margin: 0 0 15px 0; color: #475569; line-height: 1.6;">When we first met Sarah, she walked 5 miles daily for water. Today, thanks to the new well, she's in school and dreaming of becoming a doctor.</p>
-            <a href="#" style="color: #2563eb; font-weight: 600; text-decoration: none;">Read her full story &rarr;</a>
-          </div>
-        </div>
-      ` }, styles: { padding: '20px' } }
-    ]
-  },
-  {
-    id: 'financials',
-    label: 'Financials',
-    icon: PieChart,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px;">
-          <h4 style="margin: 0 0 15px; font-size: 16px; font-weight: bold; color: #0f172a; text-align: center;">Where Your Dollar Goes</h4>
-          
-          <div style="margin-bottom: 12px;">
-            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; font-weight: 600; color: #334155;">
-              <span>Program Services</span>
-              <span>85%</span>
-            </div>
-            <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-              <div style="width: 85%; background: #10b981; height: 100%;"></div>
-            </div>
-          </div>
-
-          <div style="margin-bottom: 12px;">
-            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; font-weight: 600; color: #334155;">
-              <span>Fundraising</span>
-              <span>10%</span>
-            </div>
-            <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-              <div style="width: 10%; background: #64748b; height: 100%;"></div>
-            </div>
-          </div>
-
-          <div>
-            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; font-weight: 600; color: #334155;">
-              <span>Admin</span>
-              <span>5%</span>
-            </div>
-            <div style="height: 8px; background: #e2e8f0; border-radius: 4px; overflow: hidden;">
-              <div style="width: 5%; background: #94a3b8; height: 100%;"></div>
-            </div>
-          </div>
-        </div>
-      ` }, styles: { padding: '10px 20px' } }
-    ]
-  },
-  {
     id: 'donation_grid',
     label: 'Donation Tiers',
     icon: CreditCard,
@@ -210,233 +113,6 @@ const PRESETS: Preset[] = [
     ]
   },
   {
-    id: 'scan_give',
-    label: 'Scan to Give',
-    icon: QrCode,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="text-align: center; padding: 30px; background-color: #0f172a; color: white; border-radius: 12px;">
-          <h3 style="margin: 0 0 5px; font-size: 22px; font-weight: bold;">Scan to Give</h3>
-          <p style="margin: 0 0 20px; font-size: 14px; opacity: 0.8;">Use your phone camera to donate instantly.</p>
-          <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://givehope.org/donate&color=000000&bgcolor=ffffff" style="display: block; margin: 0 auto; width: 120px; height: 120px; border: 4px solid white; border-radius: 8px;" alt="QR Code" />
-          <p style="margin: 20px 0 0; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; font-weight: bold; color: #94a3b8;">Secure & Fast Checkout</p>
-        </div>
-      ` }, styles: { padding: '20px' } }
-    ]
-  },
-  {
-    id: 'progress_bar',
-    label: 'Campaign Goal',
-    icon: Target,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; font-weight: bold; color: #334155;">
-            <span>Raised: $45,000</span>
-            <span>Goal: $50,000</span>
-          </div>
-          <div style="background: #e2e8f0; height: 10px; border-radius: 5px; overflow: hidden;">
-            <div style="background: #10b981; width: 90%; height: 100%;"></div>
-          </div>
-          <p style="margin: 10px 0 0 0; text-align: center; font-size: 13px; color: #64748b;">We are only <strong>$5,000</strong> away from fully funding the clinic!</p>
-        </div>
-      ` }, styles: { padding: '10px 20px' } }
-    ]
-  },
-  {
-    id: 'timeline',
-    label: 'Timeline',
-    icon: ListStart,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="padding: 20px;">
-          <h3 style="text-align: center; font-size: 18px; color: #0f172a; margin-bottom: 25px;">Project Roadmap</h3>
-          <div style="border-left: 2px solid #cbd5e1; margin-left: 20px; padding-left: 25px; padding-bottom: 25px; position: relative;">
-            <div style="position: absolute; left: -7px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: #10b981; border: 2px solid #fff;"></div>
-            <h4 style="margin: 0; font-size: 15px; color: #1e293b;">Phase 1: Groundbreaking</h4>
-            <p style="margin: 5px 0 0; font-size: 13px; color: #64748b;">Completed in January. Land cleared and foundation laid.</p>
-          </div>
-          <div style="border-left: 2px solid #cbd5e1; margin-left: 20px; padding-left: 25px; padding-bottom: 25px; position: relative;">
-            <div style="position: absolute; left: -7px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: #3b82f6; border: 2px solid #fff;"></div>
-            <h4 style="margin: 0; font-size: 15px; color: #1e293b;">Phase 2: Construction</h4>
-            <p style="margin: 5px 0 0; font-size: 13px; color: #64748b;"><strong>Current Status.</strong> Walls are up, roof installation begins next week.</p>
-          </div>
-          <div style="border-left: 2px solid #e2e8f0; margin-left: 20px; padding-left: 25px; position: relative;">
-            <div style="position: absolute; left: -7px; top: 0; width: 12px; height: 12px; border-radius: 50%; background: #cbd5e1; border: 2px solid #fff;"></div>
-            <h4 style="margin: 0; font-size: 15px; color: #94a3b8;">Phase 3: Opening</h4>
-            <p style="margin: 5px 0 0; font-size: 13px; color: #94a3b8;">Scheduled for June. Staff hiring and community launch.</p>
-          </div>
-        </div>
-      ` }, styles: { padding: '10px 0' } }
-    ]
-  },
-  {
-    id: 'impact_row',
-    label: 'Impact Row',
-    icon: CheckCircle,
-    blocks: [
-      { type: 'html', content: { html: `
-        <table width="100%" cellpadding="0" cellspacing="0" border="0">
-          <tr>
-            <td width="33%" valign="top" style="text-align: center; padding: 10px;">
-              <img src="https://cdn-icons-png.flaticon.com/512/2936/2936886.png" width="40" height="40" alt="Water" style="display: block; margin: 0 auto 10px;" />
-              <h4 style="margin: 0; font-size: 16px; color: #1e293b;">Clean Water</h4>
-              <p style="margin: 5px 0 0; font-size: 12px; color: #64748b;">500 Wells Built</p>
-            </td>
-            <td width="33%" valign="top" style="text-align: center; padding: 10px;">
-              <img src="https://cdn-icons-png.flaticon.com/512/2965/2965300.png" width="40" height="40" alt="Food" style="display: block; margin: 0 auto 10px;" />
-              <h4 style="margin: 0; font-size: 16px; color: #1e293b;">Meals</h4>
-              <p style="margin: 5px 0 0; font-size: 12px; color: #64748b;">1M+ Served</p>
-            </td>
-            <td width="33%" valign="top" style="text-align: center; padding: 10px;">
-              <img src="https://cdn-icons-png.flaticon.com/512/2382/2382461.png" width="40" height="40" alt="Health" style="display: block; margin: 0 auto 10px;" />
-              <h4 style="margin: 0; font-size: 16px; color: #1e293b;">Medical</h4>
-              <p style="margin: 5px 0 0; font-size: 12px; color: #64748b;">10k Treated</p>
-            </td>
-          </tr>
-        </table>
-      ` }, styles: { padding: '10px 0' } }
-    ]
-  },
-  {
-    id: 'sponsorship_card',
-    label: 'Sponsorship',
-    icon: BadgeCheck,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; max-width: 320px; margin: 0 auto; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-          <div style="background-color: #f1f5f9; height: 160px; overflow: hidden; position: relative;">
-             <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&fit=crop" style="width: 100%; height: 100%; object-fit: cover;" />
-             <div style="position: absolute; bottom: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase;">Needs Sponsor</div>
-          </div>
-          <div style="padding: 20px; background: white; text-align: center;">
-            <h3 style="margin: 0; font-size: 18px; color: #0f172a;">Mateo, 7</h3>
-            <p style="margin: 5px 0 15px; color: #64748b; font-size: 14px;">📍 Guatemala City</p>
-            <p style="font-size: 13px; line-height: 1.5; color: #334155; margin-bottom: 20px;">Mateo loves soccer and wants to be a teacher. Sponsorship covers school fees, books, and daily meals.</p>
-            <a href="#" style="display: block; background: #2563eb; color: white; text-decoration: none; padding: 12px; border-radius: 6px; font-weight: bold; font-size: 14px;">Sponsor for $35/mo</a>
-          </div>
-        </div>
-      ` }, styles: { padding: '10px 0' } }
-    ]
-  },
-  {
-    id: 'beneficiary',
-    label: 'Beneficiary',
-    icon: User,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="text-align: center; padding: 20px;">
-          <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=200&fit=crop" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 4px solid #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);" alt="Beneficiary" />
-          <h3 style="margin: 15px 0 5px 0; color: #0f172a; font-size: 18px;">Meet David</h3>
-          <p style="margin: 0 auto 15px; max-width: 400px; font-style: italic; color: #475569; font-size: 15px;">"The vocational training I received gave me the skills to open my own shop. Now I can support my entire family."</p>
-          <a href="#" style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; color: #2563eb; text-decoration: none;">Read David's Story</a>
-        </div>
-      ` }, styles: { backgroundColor: '#f8fafc', margin: '20px 0', borderRadius: '8px' } }
-    ]
-  },
-  {
-    id: 'download',
-    label: 'Download',
-    icon: FileDown,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="background-color: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 20px; display: flex; align-items: center; gap: 15px;">
-          <div style="background: white; border: 1px solid #e0f2fe; width: 50px; height: 70px; border-radius: 4px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-             <span style="font-size: 24px;">📄</span>
-          </div>
-          <div style="flex: 1;">
-            <h4 style="margin: 0 0 4px; color: #0c4a6e; font-size: 15px;">2024 Impact Report</h4>
-            <p style="margin: 0 0 10px; font-size: 12px; color: #0284c7;">Read about what we've accomplished together.</p>
-            <a href="#" style="font-size: 12px; font-weight: bold; text-decoration: underline; color: #0284c7;">Download PDF (4.5 MB)</a>
-          </div>
-        </div>
-      ` }, styles: { padding: '10px 20px' } }
-    ]
-  },
-  {
-    id: 'urgent',
-    label: 'Urgent Appeal',
-    icon: AlertCircle,
-    blocks: [
-      { type: 'html', content: { html: '<div style="background-color: #fef2f2; border: 1px solid #fee2e2; border-radius: 8px; padding: 24px; text-align: center;"><h3 style="color: #991b1b; margin-top: 0; font-size: 20px; font-weight: bold;">URGENT NEED</h3><p style="color: #7f1d1d; margin-bottom: 20px;">We need to raise $5,000 by midnight to secure the matching grant.</p><a href="#" style="background-color: #dc2626; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 14px; display: inline-block;">GIVE NOW</a></div>' }, styles: { padding: '10px' } }
-    ]
-  },
-  {
-    id: 'info_box',
-    label: 'Info Callout',
-    icon: Info,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="background-color: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 4px;">
-          <p style="margin: 0; color: #1e3a8a; font-size: 14px; line-height: 1.5;">
-            <strong>Did you know?</strong> 100% of your donation to the clean water fund goes directly to project costs. We cover our admin fees separately.
-          </p>
-        </div>
-      ` }, styles: { padding: '15px 20px' } }
-    ]
-  },
-  {
-    id: 'membership',
-    label: 'The Circle',
-    icon: Users2,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="background-color: #1e293b; color: white; padding: 30px; text-align: center; border-radius: 12px; background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,0.1) 1px, transparent 0); background-size: 20px 20px;">
-          <h3 style="margin: 0 0 10px; font-size: 24px; letter-spacing: -0.5px;">Join The Circle</h3>
-          <p style="margin: 0 auto 25px; max-width: 400px; font-size: 15px; opacity: 0.9; line-height: 1.5;">Become a monthly partner and get exclusive field updates, a welcome kit, and invitations to our annual gala.</p>
-          <a href="#" style="background: #fbbf24; color: #451a03; padding: 14px 28px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 14px; display: inline-block;">Become a Partner</a>
-        </div>
-      ` }, styles: { padding: '20px 0' } }
-    ]
-  },
-  {
-    id: 'quote',
-    label: 'Testimonial',
-    icon: Quote,
-    blocks: [
-      { type: 'text', content: { text: '"Because of this program, my children can finally go to school instead of walking miles for water. You have given us our future back."' }, styles: { fontSize: '18px', color: '#334155', fontStyle: 'italic', textAlign: 'center', lineHeight: '1.6', borderLeft: '4px solid #cbd5e1', paddingLeft: '20px', margin: '20px 0' } },
-      { type: 'text', content: { text: '- Sarah, Community Leader' }, styles: { fontSize: '14px', color: '#64748b', fontWeight: 'bold', textAlign: 'right', marginTop: '8px' } }
-    ]
-  },
-  {
-    id: 'event',
-    label: 'Event Invite',
-    icon: Calendar,
-    blocks: [
-      { type: 'divider', content: {}, styles: { margin: '20px 0', borderTop: '1px solid #e2e8f0' } },
-      { type: 'heading', content: { text: 'Annual Charity Gala' }, styles: { fontSize: '24px', fontWeight: 'bold', color: '#0f172a', textAlign: 'center' } },
-      { type: 'text', content: { text: 'Join us for an evening of celebration and vision.' }, styles: { fontSize: '16px', color: '#475569', textAlign: 'center', margin: '8px 0 16px' } },
-      { type: 'button', content: { text: 'RSVP Today', url: '#' }, styles: { backgroundColor: '#0f172a', color: '#ffffff', padding: '12px 24px', borderRadius: '4px', display: 'inline-block', fontWeight: '500', fontSize: '14px', margin: '0 auto' } },
-      { type: 'divider', content: {}, styles: { margin: '20px 0', borderTop: '1px solid #e2e8f0' } }
-    ]
-  },
-  {
-    id: 'video',
-    label: 'Video Story',
-    icon: Video,
-    blocks: [
-      { type: 'image', content: { url: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop', alt: 'Video Thumbnail' }, styles: { width: '100%', borderRadius: '8px', marginBottom: '10px', display: 'block', position: 'relative' } },
-      { type: 'heading', content: { text: 'Watch: The Journey Home' }, styles: { fontSize: '20px', fontWeight: 'bold', color: '#1e293b', marginBottom: '4px' } },
-      { type: 'text', content: { text: 'See the impact of your latest contribution in this short 2-minute update from the field.' }, styles: { fontSize: '14px', color: '#64748b', lineHeight: '1.5' } }
-    ]
-  },
-  {
-    id: 'social_follow',
-    label: 'Social Links',
-    icon: Share2,
-    blocks: [
-      { type: 'html', content: { html: `
-        <div style="text-align: center; padding: 10px;">
-          <p style="font-size: 12px; color: #64748b; margin-bottom: 10px; font-weight: bold; text-transform: uppercase;">Follow Our Journey</p>
-          <a href="#" style="display: inline-block; margin: 0 5px; width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%; line-height: 32px; color: #1e293b; text-decoration: none;">FB</a>
-          <a href="#" style="display: inline-block; margin: 0 5px; width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%; line-height: 32px; color: #1e293b; text-decoration: none;">IG</a>
-          <a href="#" style="display: inline-block; margin: 0 5px; width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%; line-height: 32px; color: #1e293b; text-decoration: none;">TW</a>
-          <a href="#" style="display: inline-block; margin: 0 5px; width: 32px; height: 32px; background: #e2e8f0; border-radius: 50%; line-height: 32px; color: #1e293b; text-decoration: none;">YT</a>
-        </div>
-      ` }, styles: { padding: '10px 0' } }
-    ]
-  },
-  {
     id: 'footer',
     label: 'Footer',
     icon: Footprints,
@@ -456,13 +132,6 @@ const PRESETS: Preset[] = [
   }
 ];
 
-// --- Helper to safely clone preset blocks ---
-const getPresetBlocks = (id: string) => {
-    const preset = PRESETS.find(p => p.id === id);
-    // Deep clone to ensure modifying the template doesn't affect the preset source definition
-    return preset ? JSON.parse(JSON.stringify(preset.blocks)) : [];
-};
-
 // --- Templates (Full Layouts) ---
 
 const SAVED_TEMPLATES: Template[] = [
@@ -473,87 +142,27 @@ const SAVED_TEMPLATES: Template[] = [
     bodyStyles: { backgroundColor: '#f8fafc', fontFamily: 'Inter, sans-serif', width: '600px', color: '#334155', fontSize: '16px', lineHeight: '1.5' },
     color: 'bg-emerald-50 text-emerald-700',
     blocks: [
-        ...getPresetBlocks('header_logo'),
-        ...getPresetBlocks('hero'),
+        { type: 'image', content: { url: 'https://via.placeholder.com/150x50?text=GIVEHOPE', alt: 'Logo' }, styles: { width: '150px', margin: '20px auto', display: 'block' } },
+        { type: 'divider', content: {}, styles: { margin: '0', borderTop: '1px solid #e2e8f0', padding: '10px 0' } },
+        { type: 'image', content: { url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&auto=format&fit=crop', alt: 'Hero Image' }, styles: { width: '100%', borderRadius: '8px', marginBottom: '20px', display: 'block' } },
         { type: 'heading', content: { text: 'October Vision Update' }, styles: { fontSize: '24px', fontWeight: 'bold', textAlign: 'center', color: '#0f172a', margin: '20px 0 10px' } },
-        { type: 'text', content: { text: 'Hi {{first_name}}, this month has been nothing short of miraculous. Thanks to your support, we broke ground on the new clinic.' }, styles: { fontSize: '16px', color: '#475569', lineHeight: '1.6', padding: '0 20px' } },
-        ...getPresetBlocks('impact_row'),
-        ...getPresetBlocks('story_feature'),
-        ...getPresetBlocks('donation_grid'),
-        ...getPresetBlocks('footer')
-    ]
-  },
-  {
-    id: 'crisis_appeal',
-    name: 'Crisis Response',
-    description: 'Urgent appeal layout for emergencies.',
-    bodyStyles: { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif', width: '600px', color: '#1e293b', fontSize: '16px', lineHeight: '1.5' },
-    color: 'bg-rose-50 text-rose-700',
-    blocks: [
-        ...getPresetBlocks('header_logo'),
-        { type: 'heading', content: { text: 'URGENT: Flood Response' }, styles: { fontSize: '28px', fontWeight: 'bold', textAlign: 'center', color: '#dc2626', margin: '20px 0' } },
-        { type: 'image', content: { url: 'https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&fit=crop', alt: 'Disaster' }, styles: { width: '100%', borderRadius: '4px', marginBottom: '15px' } },
-        { type: 'text', content: { text: 'Dear {{first_name}},\n\nHeavy rains have displaced thousands. We are on the ground providing emergency kits, but supplies are running low.' }, styles: { fontSize: '18px', color: '#334155', lineHeight: '1.6', padding: '0 20px' } },
-        ...getPresetBlocks('urgent'),
-        ...getPresetBlocks('donation_grid'),
-        ...getPresetBlocks('footer')
-    ]
-  },
-  {
-    id: 'annual_report',
-    name: 'Annual Report',
-    description: 'Year-end summary with financials and transparency.',
-    bodyStyles: { backgroundColor: '#f1f5f9', fontFamily: "'Georgia', serif", width: '640px', color: '#334155', fontSize: '16px', lineHeight: '1.6' },
-    color: 'bg-blue-50 text-blue-700',
-    blocks: [
-        ...getPresetBlocks('header_logo'),
-        { type: 'heading', content: { text: '2023 Year in Review' }, styles: { fontSize: '32px', fontWeight: 'bold', textAlign: 'center', color: '#0f172a', margin: '30px 0 10px', fontFamily: "'Georgia', serif" } },
-        ...getPresetBlocks('financials'),
-        ...getPresetBlocks('timeline'),
-        ...getPresetBlocks('quote'),
-        ...getPresetBlocks('download'),
-        ...getPresetBlocks('signature'),
-        ...getPresetBlocks('footer')
-    ]
-  },
-  {
-    id: 'welcome_series',
-    name: 'Welcome Series',
-    description: 'Onboarding email for new donors.',
-    bodyStyles: { backgroundColor: '#ffffff', fontFamily: 'Inter, sans-serif', width: '600px', color: '#334155', fontSize: '16px', lineHeight: '1.5' },
-    color: 'bg-amber-50 text-amber-700',
-    blocks: [
-        ...getPresetBlocks('header_logo'),
-        { type: 'image', content: { url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&fit=crop', alt: 'Welcome' }, styles: { width: '100%', borderRadius: '8px', marginBottom: '20px' } },
-        { type: 'heading', content: { text: 'Welcome to the Family!' }, styles: { fontSize: '26px', fontWeight: 'bold', textAlign: 'center', color: '#0f172a', margin: '10px 0' } },
-        { type: 'text', content: { text: 'Hi {{first_name}},\n\nThank you for joining us. You are now part of a global movement bringing hope to the hopeless. Here is what you can expect from us.' }, styles: { fontSize: '16px', color: '#475569', textAlign: 'center', lineHeight: '1.6', padding: '0 20px 20px' } },
-        ...getPresetBlocks('video'),
-        ...getPresetBlocks('social_follow'),
-        { type: 'button', content: { text: 'Visit Donor Portal', url: '#' }, styles: { backgroundColor: '#0f172a', color: '#ffffff', padding: '14px 28px', borderRadius: '50px', display: 'inline-block', fontWeight: '600', textDecoration: 'none', margin: '20px auto', textAlign: 'center' } },
-        ...getPresetBlocks('footer')
+        { type: 'text', content: { text: 'Hi {{first_name}},\n\nThis month has been nothing short of miraculous. Thanks to your support, we broke ground on the new clinic.' }, styles: { fontSize: '16px', color: '#475569', lineHeight: '1.6', padding: '0 20px' } },
+        { type: 'divider', content: {}, styles: { margin: '30px 0 20px', borderTop: '1px solid #e2e8f0' } },
+        { type: 'text', content: { text: 'GiveHope Humanitarian • 123 Mission Way, San Francisco, CA' }, styles: { fontSize: '12px', color: '#94a3b8', textAlign: 'center', marginBottom: '4px' } }
     ]
   }
 ];
 
 const INITIAL_BLOCKS: Block[] = [
-  {
-    id: 'b1',
-    type: 'heading',
-    content: { text: 'Weekly Update' },
-    styles: { textAlign: 'center', color: '#0f172a', padding: '20px 0 10px 0' }
-  },
-  {
-    id: 'b2',
-    type: 'text',
-    content: { text: 'Dear Partner, thank you for your continued support. Here is what we have been up to this week.' },
-    styles: { textAlign: 'left', color: '#475569', padding: '10px 20px', fontSize: '16px', lineHeight: '1.6' }
-  },
-  {
-    id: 'b3',
-    type: 'button',
-    content: { text: 'Read Full Report', url: '#' },
-    styles: { textAlign: 'center', padding: '20px', backgroundColor: '#2563eb', color: '#ffffff', borderRadius: '6px', display: 'inline-block', textDecoration: 'none', margin: '20px auto' }
-  }
+  { id: 'init_1', type: 'image', content: { url: 'https://via.placeholder.com/150x50?text=GIVEHOPE', alt: 'Logo' }, styles: { width: '150px', margin: '20px auto', display: 'block' } },
+  { id: 'init_2', type: 'divider', content: {}, styles: { margin: '0', borderTop: '1px solid #e2e8f0', padding: '10px 0' } },
+  { id: 'init_3', type: 'image', content: { url: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&auto=format&fit=crop', alt: 'Hero Image' }, styles: { width: '100%', borderRadius: '8px', marginBottom: '20px', display: 'block' } },
+  { id: 'init_4', type: 'heading', content: { text: 'October Vision Update' }, styles: { fontSize: '24px', fontWeight: 'bold', textAlign: 'center', color: '#0f172a', margin: '20px 0 10px' } },
+  { id: 'init_5', type: 'text', content: { text: 'Hi {{first_name}},\n\nThis month has been nothing short of miraculous. Thanks to your support, we broke ground on the new clinic in Northern Thailand. This facility will serve over 2,000 families who previously had to travel 4 hours for basic medical care.\n\nYour generosity is building more than walls; it is building a future of health and hope.' }, styles: { fontSize: '16px', color: '#475569', lineHeight: '1.6', padding: '0 20px', textAlign: 'left' } },
+  { id: 'init_6', type: 'button', content: { text: 'View Construction Photos', url: '#' }, styles: { backgroundColor: '#2563eb', color: '#ffffff', padding: '14px 28px', borderRadius: '6px', display: 'inline-block', fontWeight: '600', textDecoration: 'none', margin: '20px auto', textAlign: 'center' } },
+  { id: 'init_7', type: 'divider', content: {}, styles: { margin: '30px 0 20px', borderTop: '1px solid #e2e8f0' } },
+  { id: 'init_8', type: 'text', content: { text: 'GiveHope Humanitarian • 123 Mission Way, San Francisco, CA' }, styles: { fontSize: '12px', color: '#94a3b8', textAlign: 'center', marginBottom: '4px' } },
+  { id: 'init_9', type: 'text', content: { text: 'Unsubscribe  |  Privacy Policy' }, styles: { fontSize: '12px', color: '#94a3b8', textAlign: 'center', textDecoration: 'underline' } }
 ];
 
 // --- Helper Components ---
@@ -622,7 +231,7 @@ const ColorPicker = ({ label, value, onChange }: { label: string, value?: string
 
 // --- Main Component ---
 
-export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => void, onExport?: () => void }> = ({ mode, onSave, onExport }) => {
+export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => void, onExport?: (type: string) => void }> = ({ mode, onSave, onExport }) => {
   const [state, setState] = useState<EditorState>({
     blocks: INITIAL_BLOCKS,
     selectedBlockId: null,
@@ -640,10 +249,159 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
 
   const [dragTarget, setDragTarget] = useState<DragTarget | null>(null);
   const [isPreview, setIsPreview] = useState(false);
-  const [activeTab, setActiveTab] = useState('content');
+  const [activeTab, setActiveTab] = useState('ai');
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // --- Actions ---
+  // --- AI State ---
+  const [aiPrompt, setAiPrompt] = useState('');
+  const [isAiGenerating, setIsAiGenerating] = useState(false);
+  const [isAiRewriting, setIsAiRewriting] = useState(false);
+
+  // --- AI Actions ---
+
+  const getAIClient = () => {
+    try {
+      if (!process.env.API_KEY) return null;
+      return new GoogleGenAI({ apiKey: process.env.API_KEY });
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+
+  const handleMagicLayout = async () => {
+    if (!aiPrompt.trim()) return;
+    setIsAiGenerating(true);
+    const ai = getAIClient();
+
+    try {
+        if (!ai) {
+            // Mock for no key
+            await new Promise(r => setTimeout(r, 2000));
+            // Just load a template as a mock
+            const blocksCopy = JSON.parse(JSON.stringify(SAVED_TEMPLATES[0].blocks));
+            const newBlocks = blocksCopy.map((b: any) => ({ ...b, id: `block_${Date.now()}_${Math.random()}` }));
+            setState(prev => ({ ...prev, blocks: newBlocks, selectedBlockId: null }));
+            setIsAiGenerating(false);
+            return;
+        }
+
+        const prompt = `
+            Act as an expert email designer for a humanitarian organization.
+            Create a complete email layout JSON based on this user request: "${aiPrompt}"
+            
+            Return a JSON object with a 'blocks' array. 
+            Each block has { type: 'heading'|'text'|'image'|'button'|'divider', content: {...}, styles: {...} }.
+            
+            Rules:
+            1. Use 'heading' for titles (styles: bold, 24px+).
+            2. Use 'text' for body (styles: 16px, line-height 1.6).
+            3. Use 'button' for calls to action (styles: blue background, white text, padding).
+            4. Use 'image' for visuals. Use https://source.unsplash.com/800x400/?keyword for URLs (replace keyword).
+            5. Create a cohesive story: Header, Hero Image, Emotional Hook, Solution, Call to Action, Footer.
+            6. Return ONLY valid JSON.
+        `;
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: prompt,
+            config: { responseMimeType: "application/json" }
+        });
+
+        const json = JSON.parse(response.text || "{}");
+        if (json.blocks && Array.isArray(json.blocks)) {
+            const newBlocks = json.blocks.map((b: any) => ({
+                ...b,
+                id: `ai_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+            }));
+            setState(prev => ({ ...prev, blocks: newBlocks, selectedBlockId: null }));
+        }
+
+    } catch (e) {
+        console.error("AI Layout Error", e);
+    } finally {
+        setIsAiGenerating(false);
+    }
+  };
+
+  const handleSmartRewrite = async (tone: 'Professional' | 'Emotional' | 'Urgent' | 'Shorten' | 'Fix Grammar') => {
+    if (!state.selectedBlockId) return;
+    const block = state.blocks.find(b => b.id === state.selectedBlockId);
+    if (!block || !['text', 'heading'].includes(block.type)) return;
+
+    setIsAiRewriting(true);
+    const ai = getAIClient();
+    const currentText = block.content.text;
+
+    try {
+        if (!ai) {
+            await new Promise(r => setTimeout(r, 1000));
+            updateBlockContent(block.id, 'text', `[AI ${tone}] ${currentText}`);
+            setIsAiRewriting(false);
+            return;
+        }
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Rewrite the following text to be ${tone}. Keep formatting minimal. Text: "${currentText}"`
+        });
+
+        const newText = response.text?.trim();
+        if (newText) {
+            updateBlockContent(block.id, 'text', newText);
+        }
+    } catch (e) {
+        console.error("AI Rewrite Error", e);
+    } finally {
+        setIsAiRewriting(false);
+    }
+  };
+
+  const handleImageSuggestion = async () => {
+    if (!state.selectedBlockId) return;
+    const block = state.blocks.find(b => b.id === state.selectedBlockId);
+    if (!block || block.type !== 'image') return;
+
+    setIsAiRewriting(true); // Re-use loading state
+    const ai = getAIClient();
+
+    try {
+        // Gather context from surrounding text blocks
+        const context = state.blocks
+            .filter(b => b.type === 'text' || b.type === 'heading')
+            .map(b => b.content.text)
+            .join(' ')
+            .substring(0, 500);
+
+        if (!ai) {
+             updateBlockContent(block.id, 'url', 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&auto=format&fit=crop');
+             setIsAiRewriting(false);
+             return;
+        }
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Analyze this email context and suggest a single, specific 1-2 word search term for an Unsplash stock photo. Context: "${context}". Return ONLY the keyword.`
+        });
+
+        const keyword = response.text?.trim() || "charity";
+        // Use Unsplash source API for demo (or a robust search in real app)
+        const newUrl = `https://source.unsplash.com/800x600/?${encodeURIComponent(keyword)}`;
+        // Note: source.unsplash is deprecated/unreliable in some contexts, but works for mock concepts. 
+        // Better mock:
+        const mockUrl = `https://via.placeholder.com/800x600?text=${keyword}`;
+        
+        updateBlockContent(block.id, 'url', mockUrl);
+        updateBlockContent(block.id, 'alt', `Image of ${keyword}`);
+
+    } catch (e) {
+        console.error(e);
+    } finally {
+        setIsAiRewriting(false);
+    }
+  };
+
+  // --- Core Editor Logic ---
 
   const handleDragStart = (e: React.DragEvent, type: string) => {
     e.dataTransfer.setData('blockType', type);
@@ -657,7 +415,6 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
 
   const loadTemplate = (template: Template) => {
     if (confirm('Loading a template will replace your current content. Continue?')) {
-        // Deep clone to prevent mutation of the template definition
         const blocksCopy = JSON.parse(JSON.stringify(template.blocks));
         const newBlocks = blocksCopy.map((b: any) => ({
             ...b, 
@@ -677,22 +434,17 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
     if (!state.selectedBlockId) return;
     const block = state.blocks.find(b => b.id === state.selectedBlockId);
     if (!block) return;
-    
     const currentText = block.content.text || '';
-    // Append to text content
     updateBlockContent(block.id, 'text', currentText + ' ' + tag);
   };
 
-  // Handle Drag Over Block (to determine insertion point)
   const handleBlockDragOver = (e: React.DragEvent, blockId: string) => {
     if (isPreview) return;
     e.preventDefault();
     e.stopPropagation();
-
     const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
     const midY = rect.top + rect.height / 2;
     const position = e.clientY < midY ? 'top' : 'bottom';
-
     if (!dragTarget || dragTarget.id !== blockId || dragTarget.position !== position) {
       setDragTarget({ id: blockId, position });
     }
@@ -702,52 +454,36 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
     e.preventDefault();
     setDragTarget(null);
     if (isPreview) return;
-
     const blockType = e.dataTransfer.getData('blockType') as BlockType;
     const presetId = e.dataTransfer.getData('presetId');
     const reorderId = e.dataTransfer.getData('reorderId');
-
-    // If dropped on empty canvas, append to end
-    if (!dragTarget) {
-       insertBlock(blockType, presetId, reorderId, state.blocks.length);
-    }
+    if (!dragTarget) insertBlock(blockType, presetId, reorderId, state.blocks.length);
   };
 
   const handleBlockDrop = (e: React.DragEvent, targetId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    if (isPreview || !dragTarget) {
-      setDragTarget(null);
-      return;
-    }
-
+    if (isPreview || !dragTarget) { setDragTarget(null); return; }
     const blockType = e.dataTransfer.getData('blockType') as BlockType;
     const presetId = e.dataTransfer.getData('presetId');
     const reorderId = e.dataTransfer.getData('reorderId');
-
     const targetIndex = state.blocks.findIndex(b => b.id === targetId);
-    // Calculate insertion index based on top/bottom
     const insertIndex = dragTarget.position === 'top' ? targetIndex : targetIndex + 1;
-
     insertBlock(blockType, presetId, reorderId, insertIndex);
     setDragTarget(null);
   };
 
   const insertBlock = (blockType: BlockType | '', presetId: string, reorderId: string, index: number) => {
     const newBlocks = [...state.blocks];
-
     if (reorderId) {
-      // Reorder existing
       const currentIndex = newBlocks.findIndex(b => b.id === reorderId);
       if (currentIndex > -1) {
         const [movedBlock] = newBlocks.splice(currentIndex, 1);
-        // Adjust index if moving down
         const adjustedIndex = currentIndex < index ? index - 1 : index;
         newBlocks.splice(adjustedIndex, 0, movedBlock);
         setState(prev => ({ ...prev, blocks: newBlocks, selectedBlockId: movedBlock.id }));
       }
     } else if (presetId) {
-      // Insert Preset (DEEP CLONE)
       const preset = PRESETS.find(p => p.id === presetId);
       if (preset) {
         const blocksToAdd = JSON.parse(JSON.stringify(preset.blocks)).map((b: any) => ({
@@ -758,7 +494,6 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
         setState(prev => ({ ...prev, blocks: newBlocks, selectedBlockId: blocksToAdd[0].id }));
       }
     } else if (blockType) {
-      // Insert New Block
       const newBlock: Block = {
         id: `block_${Date.now()}`,
         type: blockType,
@@ -772,7 +507,7 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
 
   const duplicateBlock = (block: Block) => {
     const index = state.blocks.findIndex(b => b.id === block.id);
-    const newBlock = { ...block, id: `block_${Date.now()}` }; // Cloning logic should ideally deep clone content too if objects
+    const newBlock = { ...block, id: `block_${Date.now()}` }; 
     const newBlocks = [...state.blocks];
     newBlocks.splice(index + 1, 0, newBlock);
     setState(prev => ({ ...prev, blocks: newBlocks, selectedBlockId: newBlock.id }));
@@ -847,15 +582,12 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
         className={cn(
           "relative group/block transition-all",
           !isPreview && "cursor-pointer",
-          // Selection Ring
           !isPreview && isSelected ? "ring-2 ring-blue-500 z-10" : "hover:ring-1 hover:ring-blue-300 ring-transparent",
-          // Drop Indicators
           !isPreview && dragTarget?.id === block.id && dragTarget.position === 'top' && "border-t-4 border-t-blue-500",
           !isPreview && dragTarget?.id === block.id && dragTarget.position === 'bottom' && "border-b-4 border-b-blue-500"
         )}
-        style={{ position: 'relative' }} // ensure relative for absolute controls
+        style={{ position: 'relative' }}
       >
-        {/* Content Rendering */}
         <div style={block.styles} className="w-full">
             {block.type === 'text' && (
                 <div 
@@ -937,7 +669,6 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
             )}
         </div>
 
-        {/* Hover/Selection Toolbar */}
         {isSelected && !isPreview && (
           <div className="absolute -right-12 top-0 flex flex-col gap-1 z-50">
             <button 
@@ -972,31 +703,13 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
       <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 shrink-0 shadow-sm z-20">
         <div className="flex items-center gap-4">
            <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
-              <button 
-                onClick={() => setState(prev => ({ ...prev, device: 'desktop' }))}
-                className={cn(
-                  "p-2 rounded-md transition-all",
-                  state.device === 'desktop' ? "bg-white shadow-sm text-blue-600" : "text-slate-500 hover:text-slate-700"
-                )}
-              >
+              <button onClick={() => setState(prev => ({ ...prev, device: 'desktop' }))} className={cn("p-2 rounded-md transition-all", state.device === 'desktop' ? "bg-white shadow-sm text-blue-600" : "text-slate-500 hover:text-slate-700")}>
                 <Monitor className="h-4 w-4" />
               </button>
-              <button 
-                onClick={() => setState(prev => ({ ...prev, device: 'tablet' }))}
-                className={cn(
-                  "p-2 rounded-md transition-all",
-                  state.device === 'tablet' ? "bg-white shadow-sm text-blue-600" : "text-slate-500 hover:text-slate-700"
-                )}
-              >
+              <button onClick={() => setState(prev => ({ ...prev, device: 'tablet' }))} className={cn("p-2 rounded-md transition-all", state.device === 'tablet' ? "bg-white shadow-sm text-blue-600" : "text-slate-500 hover:text-slate-700")}>
                 <Tablet className="h-4 w-4" />
               </button>
-              <button 
-                onClick={() => setState(prev => ({ ...prev, device: 'mobile' }))}
-                className={cn(
-                  "p-2 rounded-md transition-all",
-                  state.device === 'mobile' ? "bg-white shadow-sm text-blue-600" : "text-slate-500 hover:text-slate-700"
-                )}
-              >
+              <button onClick={() => setState(prev => ({ ...prev, device: 'mobile' }))} className={cn("p-2 rounded-md transition-all", state.device === 'mobile' ? "bg-white shadow-sm text-blue-600" : "text-slate-500 hover:text-slate-700")}>
                 <Smartphone className="h-4 w-4" />
               </button>
            </div>
@@ -1008,61 +721,53 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
         </div>
 
         <div className="flex items-center gap-3">
-           <Button 
-             variant="ghost" 
-             className={cn(
-                "text-slate-600 gap-2 h-9 text-xs font-semibold",
-                isPreview ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : "hover:bg-slate-100"
-             )}
-             onClick={() => {
-                setIsPreview(!isPreview);
-                if (!isPreview) setState(prev => ({ ...prev, selectedBlockId: null }));
-             }}
-           >
+           <Button variant="ghost" className={cn("text-slate-600 gap-2 h-9 text-xs font-semibold", isPreview ? "bg-blue-100 text-blue-700 hover:bg-blue-200" : "hover:bg-slate-100")} onClick={() => { setIsPreview(!isPreview); if (!isPreview) setState(prev => ({ ...prev, selectedBlockId: null })); }}>
               {isPreview ? <><EyeOff className="h-4 w-4" /> Exit Preview</> : <><Eye className="h-4 w-4" /> Preview</>}
            </Button>
            <Button variant="outline" className="gap-2 h-9 text-xs font-semibold" onClick={onSave}>
               <Save className="h-4 w-4" /> Save Draft
            </Button>
-           <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 h-9 text-xs font-semibold shadow-md" onClick={onExport}>
-              <Download className="h-4 w-4" /> Export {mode === 'email' ? 'HTML' : 'PDF'}
-           </Button>
+           
+           {/* Enhanced Export Dropdown */}
+           <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 h-9 text-xs font-semibold shadow-md">
+                  <Download className="h-4 w-4" /> Export <ChevronDown className="h-3 w-3 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => onExport && onExport('html')}>
+                  Export HTML
+                </DropdownMenuItem>
+                {mode === 'email' && (
+                  <DropdownMenuItem onClick={() => onExport && onExport('mailchimp')}>
+                    Export to Mailchimp
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={() => onExport && onExport('json')}>
+                  Export JSON
+                </DropdownMenuItem>
+                {mode === 'pdf' && (
+                   <DropdownMenuItem onClick={() => onExport && onExport('pdf')}>
+                    Export PDF
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+           </DropdownMenu>
         </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
         
         {/* Canvas Area */}
-        <div 
-          className="flex-1 overflow-y-auto bg-slate-100 flex justify-center p-8 relative"
-          onClick={() => !isPreview && setState(prev => ({ ...prev, selectedBlockId: null }))}
-        >
-           <div 
-             ref={canvasRef}
-             className="bg-white shadow-xl transition-all duration-300 min-h-[800px] flex flex-col relative"
-             style={{ 
-               width: state.device === 'desktop' ? '100%' : state.device === 'tablet' ? '600px' : '375px',
-               maxWidth: state.bodyStyles.width || '600px',
-               backgroundColor: state.bodyStyles.backgroundColor,
-               fontFamily: state.bodyStyles.fontFamily,
-               color: state.bodyStyles.color,
-               fontSize: state.bodyStyles.fontSize,
-               lineHeight: state.bodyStyles.lineHeight,
-             }}
-             onDragOver={(e) => { e.preventDefault(); if (!isPreview && !dragTarget) setDragTarget({ id: 'canvas-bottom', position: 'bottom' }); }}
-             onDrop={handleCanvasDrop}
-           >
-              {/* Dynamic Style Injection for Canvas-Specific Overrides */}
-              <style>{`
-                .unlayer-canvas a { color: ${state.bodyStyles.linkColor || '#2563eb'}; }
-                .unlayer-canvas p { margin-bottom: 1em; }
-              `}</style>
-              
+        <div className="flex-1 overflow-y-auto bg-slate-100 flex justify-center p-8 relative" onClick={() => !isPreview && setState(prev => ({ ...prev, selectedBlockId: null }))}>
+           <div ref={canvasRef} className="bg-white shadow-xl transition-all duration-300 min-h-[800px] flex flex-col relative" style={{ width: state.device === 'desktop' ? '100%' : state.device === 'tablet' ? '600px' : '375px', maxWidth: state.bodyStyles.width || '600px', backgroundColor: state.bodyStyles.backgroundColor, fontFamily: state.bodyStyles.fontFamily, color: state.bodyStyles.color, fontSize: state.bodyStyles.fontSize, lineHeight: state.bodyStyles.lineHeight }}>
+              <style>{`.unlayer-canvas a { color: ${state.bodyStyles.linkColor || '#2563eb'}; } .unlayer-canvas p { margin-bottom: 1em; }`}</style>
               <div className="flex-1 py-8 px-8 min-h-full unlayer-canvas flex flex-col">
                  {state.blocks.length === 0 ? (
                     <div className="flex-1 flex flex-col items-center justify-center text-slate-300 pointer-events-none p-12 text-center h-full border-2 border-dashed border-slate-200 m-4 rounded-xl">
                        <Layout className="w-12 h-12 mb-2 mx-auto text-slate-200" />
-                       <p className="text-sm font-medium text-slate-400">Drag blocks from the sidebar here</p>
+                       <p className="text-sm font-medium text-slate-400">Drag blocks or ask AI to design for you.</p>
                     </div>
                  ) : (
                     state.blocks.map(block => renderBlockPreview(block))
@@ -1087,39 +792,40 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
                     <div className="p-5 space-y-6 overflow-y-auto flex-1 min-h-0">
                     {/* Content Settings */}
                     <div className="space-y-4">
-                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Content</h4>
+                        <div className="flex items-center justify-between">
+                            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Content</h4>
+                            {/* AI Rewrite Actions for Text/Heading */}
+                            {['text', 'heading'].includes(selectedBlock.type) && (
+                                <div className="flex gap-1">
+                                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0 rounded-full text-indigo-600 hover:bg-indigo-50" onClick={() => handleSmartRewrite('Professional')} title="Make Professional"><Sparkles className="h-3.5 w-3.5" /></Button>
+                                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0 rounded-full text-rose-600 hover:bg-rose-50" onClick={() => handleSmartRewrite('Emotional')} title="Make Emotional"><Heart className="h-3.5 w-3.5" /></Button>
+                                    <Button size="sm" variant="ghost" className="h-6 w-6 p-0 rounded-full text-amber-600 hover:bg-amber-50" onClick={() => handleSmartRewrite('Shorten')} title="Shorten"><Minus className="h-3.5 w-3.5" /></Button>
+                                    {isAiRewriting && <RefreshCcw className="h-3.5 w-3.5 animate-spin text-slate-400 ml-1" />}
+                                </div>
+                            )}
+                            {selectedBlock.type === 'image' && (
+                                <Button size="sm" variant="ghost" className="h-6 text-[10px] gap-1 text-indigo-600 bg-indigo-50 hover:bg-indigo-100" onClick={handleImageSuggestion} disabled={isAiRewriting}>
+                                    {isAiRewriting ? <RefreshCcw className="h-3 w-3 animate-spin" /> : <Wand2 className="h-3 w-3" />} Suggest
+                                </Button>
+                            )}
+                        </div>
                         
                         {['text', 'heading', 'button'].includes(selectedBlock.type) && (
                             <div className="space-y-1.5">
                             <div className="flex justify-between items-center">
                                 <Label className="text-xs text-slate-600 font-semibold">Text Content</Label>
-                                {/* Merge Tags Helper */}
                                 <div className="flex gap-1">
-                                    {['{{first_name}}', '{{email}}', '{{unsubscribe}}'].map(tag => (
-                                        <button 
-                                            key={tag} 
-                                            onClick={() => insertMergeTag(tag)}
-                                            className="text-[9px] bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-colors"
-                                            title={`Insert ${tag}`}
-                                        >
+                                    {['{{first_name}}', '{{email}}'].map(tag => (
+                                        <button key={tag} onClick={() => insertMergeTag(tag)} className="text-[9px] bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5 text-slate-500 hover:text-blue-600 hover:border-blue-200 transition-colors">
                                             {tag.replace(/[{}]/g, '')}
                                         </button>
                                     ))}
                                 </div>
                             </div>
                             {selectedBlock.type === 'text' ? (
-                                <textarea 
-                                rows={4}
-                                className="w-full rounded-md border border-slate-300 bg-white p-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm placeholder:text-slate-400"
-                                value={selectedBlock.content.text}
-                                onChange={(e) => updateBlockContent(selectedBlock.id, 'text', e.target.value)}
-                                />
+                                <textarea rows={4} className="w-full rounded-md border border-slate-300 bg-white p-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm placeholder:text-slate-400" value={selectedBlock.content.text} onChange={(e) => updateBlockContent(selectedBlock.id, 'text', e.target.value)} />
                             ) : (
-                                <Input 
-                                className="bg-white border-slate-300 text-slate-900 shadow-sm"
-                                value={selectedBlock.content.text}
-                                onChange={(e) => updateBlockContent(selectedBlock.id, 'text', e.target.value)}
-                                />
+                                <Input className="bg-white border-slate-300 text-slate-900 shadow-sm" value={selectedBlock.content.text} onChange={(e) => updateBlockContent(selectedBlock.id, 'text', e.target.value)} />
                             )}
                             </div>
                         )}
@@ -1127,36 +833,14 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
                         {selectedBlock.type === 'html' && (
                             <div className="space-y-1.5">
                                 <Label className="text-xs text-slate-600 font-semibold">HTML Code</Label>
-                                <textarea 
-                                rows={8}
-                                className="w-full rounded-md border border-slate-300 bg-white p-2 text-xs font-mono text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm"
-                                value={selectedBlock.content.html}
-                                onChange={(e) => updateBlockContent(selectedBlock.id, 'html', e.target.value)}
-                                />
+                                <textarea rows={8} className="w-full rounded-md border border-slate-300 bg-white p-2 text-xs font-mono text-slate-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none shadow-sm" value={selectedBlock.content.html} onChange={(e) => updateBlockContent(selectedBlock.id, 'html', e.target.value)} />
                             </div>
                         )}
 
-                        {selectedBlock.type === 'button' && (
+                        {(selectedBlock.type === 'button' || selectedBlock.type === 'image') && (
                             <div className="space-y-1.5">
-                            <Label className="text-xs text-slate-600 font-semibold">Link URL</Label>
-                            <Input 
-                                className="bg-white border-slate-300 text-slate-900 shadow-sm"
-                                value={selectedBlock.content.url}
-                                onChange={(e) => updateBlockContent(selectedBlock.id, 'url', e.target.value)}
-                                placeholder="https://"
-                            />
-                            </div>
-                        )}
-
-                        {selectedBlock.type === 'image' && (
-                            <div className="space-y-1.5">
-                            <Label className="text-xs text-slate-600 font-semibold">Image URL</Label>
-                            <Input 
-                                className="bg-white border-slate-300 text-slate-900 shadow-sm"
-                                value={selectedBlock.content.url}
-                                onChange={(e) => updateBlockContent(selectedBlock.id, 'url', e.target.value)}
-                                placeholder="https://"
-                            />
+                            <Label className="text-xs text-slate-600 font-semibold">{selectedBlock.type === 'button' ? 'Link URL' : 'Image URL'}</Label>
+                            <Input className="bg-white border-slate-300 text-slate-900 shadow-sm" value={selectedBlock.content.url} onChange={(e) => updateBlockContent(selectedBlock.id, 'url', e.target.value)} placeholder="https://" />
                             </div>
                         )}
                     </div>
@@ -1166,57 +850,31 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
                     {/* Style Settings */}
                     <div className="space-y-4">
                         <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Styles</h4>
-                        
                         <div className="space-y-3">
                             <Label className="text-xs text-slate-600 font-semibold">Alignment</Label>
                             <div className="flex bg-slate-100 rounded-md p-1 gap-1 border border-slate-200">
                                 {['left', 'center', 'right'].map((align) => (
-                                <button
-                                    key={align}
-                                    onClick={() => updateBlockStyles(selectedBlock.id, { textAlign: align as any })}
-                                    className={cn(
-                                    "flex-1 py-1 rounded flex items-center justify-center transition-all",
-                                    selectedBlock.styles.textAlign === align ? "bg-white shadow-sm text-slate-900 font-medium" : "text-slate-500 hover:text-slate-700"
-                                    )}
-                                >
+                                <button key={align} onClick={() => updateBlockStyles(selectedBlock.id, { textAlign: align as any })} className={cn("flex-1 py-1 rounded flex items-center justify-center transition-all", selectedBlock.styles.textAlign === align ? "bg-white shadow-sm text-slate-900 font-medium" : "text-slate-500 hover:text-slate-700")}>
                                     {align === 'left' ? <AlignLeft className="w-4 h-4" /> : align === 'center' ? <AlignCenter className="w-4 h-4" /> : <AlignRight className="w-4 h-4" />}
                                 </button>
                                 ))}
                             </div>
                         </div>
-
                         {['heading', 'text'].includes(selectedBlock.type) && (
-                            <ColorPicker 
-                            label="Text Color" 
-                            value={selectedBlock.styles.color as string} 
-                            onChange={(val) => updateBlockStyles(selectedBlock.id, { color: val })} 
-                            />
+                            <ColorPicker label="Text Color" value={selectedBlock.styles.color as string} onChange={(val) => updateBlockStyles(selectedBlock.id, { color: val })} />
                         )}
-
                         {selectedBlock.type === 'button' && (
                             <>
-                            <ColorPicker 
-                                label="Background Color" 
-                                value={(selectedBlock.styles as any).backgroundColor} 
-                                onChange={(val) => updateBlockStyles(selectedBlock.id, { backgroundColor: val })} 
-                            />
-                            <ColorPicker 
-                                label="Text Color" 
-                                value={(selectedBlock.styles as any).color} 
-                                onChange={(val) => updateBlockStyles(selectedBlock.id, { color: val })} 
-                            />
+                            <ColorPicker label="Background Color" value={(selectedBlock.styles as any).backgroundColor} onChange={(val) => updateBlockStyles(selectedBlock.id, { backgroundColor: val })} />
+                            <ColorPicker label="Text Color" value={(selectedBlock.styles as any).color} onChange={(val) => updateBlockStyles(selectedBlock.id, { color: val })} />
                             <div className="space-y-1.5">
                                 <Label className="text-xs text-slate-600 font-semibold">Border Radius</Label>
                                 <Input className="h-8 text-xs bg-white" value={(selectedBlock.styles as any).borderRadius} onChange={(e) => updateBlockStyles(selectedBlock.id, { borderRadius: e.target.value })} />
                             </div>
                             </>
                         )}
-
                         <div className="space-y-1.5">
-                            <div className="flex justify-between">
-                                <Label className="text-xs text-slate-600 font-semibold">Padding</Label>
-                                <span className="text-xs text-slate-400">{selectedBlock.styles.padding}</span>
-                            </div>
+                            <div className="flex justify-between"><Label className="text-xs text-slate-600 font-semibold">Padding</Label><span className="text-xs text-slate-400">{selectedBlock.styles.padding}</span></div>
                             <div className="grid grid-cols-2 gap-2">
                                 <Input className="h-8 text-xs bg-white border-slate-300 text-slate-900 shadow-sm" placeholder="Top/Bottom" onChange={(e) => updateBlockStyles(selectedBlock.id, { padding: `${e.target.value} ${selectedBlock.styles.padding?.toString().split(' ')[1] || '0px'}` })} />
                                 <Input className="h-8 text-xs bg-white border-slate-300 text-slate-900 shadow-sm" placeholder="Left/Right" onChange={(e) => updateBlockStyles(selectedBlock.id, { padding: `${selectedBlock.styles.padding?.toString().split(' ')[0] || '0px'} ${e.target.value}` })} />
@@ -1232,13 +890,54 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
                 // --- Standard Tabs ---
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full min-h-0">
                     <div className="px-2 pt-2 border-b border-slate-100 bg-slate-50/50 shrink-0">
-                    <TabsList className="w-full grid grid-cols-4 bg-transparent h-12">
-                        <TabsTrigger value="content" className="text-xs font-semibold data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md h-9">Content</TabsTrigger>
+                    <TabsList className="w-full grid grid-cols-5 bg-transparent h-12">
+                        <TabsTrigger value="ai" className="text-xs font-semibold data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md h-9 data-[state=active]:text-indigo-600"><Sparkles className="w-4 h-4" /></TabsTrigger>
+                        <TabsTrigger value="content" className="text-xs font-semibold data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md h-9">Tools</TabsTrigger>
                         <TabsTrigger value="blocks" className="text-xs font-semibold data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md h-9">Blocks</TabsTrigger>
-                        <TabsTrigger value="templates" className="text-xs font-semibold data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md h-9">Templates</TabsTrigger>
+                        <TabsTrigger value="templates" className="text-xs font-semibold data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md h-9">Layouts</TabsTrigger>
                         <TabsTrigger value="body" className="text-xs font-semibold data-[state=active]:bg-white data-[state=active]:shadow-sm rounded-md h-9">Body</TabsTrigger>
                     </TabsList>
                     </div>
+
+                    <TabsContent value="ai" className="flex-1 overflow-y-auto p-5 m-0 min-h-0 bg-gradient-to-b from-indigo-50/50 to-white">
+                        <div className="space-y-6">
+                            <div className="text-center space-y-2 mb-6">
+                                <div className="w-12 h-12 bg-indigo-100 rounded-full flex items-center justify-center mx-auto text-indigo-600 mb-2 shadow-sm border border-indigo-200">
+                                    <Bot className="w-6 h-6" />
+                                </div>
+                                <h3 className="text-lg font-bold text-slate-900">AI Designer</h3>
+                                <p className="text-xs text-slate-500">Describe your campaign and let Gemini build the layout.</p>
+                            </div>
+
+                            <div className="space-y-3">
+                                <Label className="text-xs font-bold text-slate-500 uppercase tracking-wider">Magic Layout</Label>
+                                <Textarea 
+                                    placeholder="e.g. A fundraising appeal for clean water in Kenya with a hero image, emotional story, and large donation button."
+                                    className="min-h-[100px] resize-none bg-white border-indigo-100 focus:border-indigo-300 focus:ring-indigo-100"
+                                    value={aiPrompt}
+                                    onChange={(e) => setAiPrompt(e.target.value)}
+                                />
+                                <Button 
+                                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-md font-semibold"
+                                    onClick={handleMagicLayout}
+                                    disabled={isAiGenerating || !aiPrompt.trim()}
+                                >
+                                    {isAiGenerating ? <><RefreshCcw className="mr-2 h-4 w-4 animate-spin" /> Designing...</> : <><Wand2 className="mr-2 h-4 w-4" /> Generate Layout</>}
+                                </Button>
+                            </div>
+
+                            <div className="h-px bg-indigo-100" />
+
+                            <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                                <h4 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                                    <MessageSquarePlus className="h-4 w-4 text-emerald-500" /> Smart Refinement
+                                </h4>
+                                <p className="text-xs text-slate-500 leading-relaxed">
+                                    Select any text block on the canvas to see AI writing tools for tone, grammar, and length.
+                                </p>
+                            </div>
+                        </div>
+                    </TabsContent>
 
                     <TabsContent value="content" className="flex-1 overflow-y-auto p-4 m-0 min-h-0">
                     <div className="grid grid-cols-2 gap-3">
@@ -1278,7 +977,6 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
                     </TabsContent>
 
                     <TabsContent value="body" className="flex-1 overflow-y-auto p-6 m-0 space-y-8 min-h-0">
-                      {/* Section 1: Dimensions & Background */}
                       <div className="space-y-4">
                         <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Dimensions</h4>
                         <div className="space-y-3">
@@ -1286,84 +984,35 @@ export const UnlayerEditor: React.FC<{ mode: 'email' | 'pdf', onSave?: () => voi
                              <Label className="text-xs text-slate-600 font-semibold">Content Width</Label>
                              <span className="text-xs font-mono text-slate-500">{state.bodyStyles.width || '600px'}</span>
                           </div>
-                          <Slider 
-                            defaultValue={[parseInt(state.bodyStyles.width?.toString() || '600')]} 
-                            max={900} 
-                            min={320} 
-                            step={10}
-                            onValueChange={(val) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, width: `${val[0]}px` } }))}
-                          />
+                          <Slider defaultValue={[parseInt(state.bodyStyles.width?.toString() || '600')]} max={900} min={320} step={10} onValueChange={(val) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, width: `${val[0]}px` } }))} />
                         </div>
-                        
-                        <ColorPicker 
-                            label="Content Background" 
-                            value={state.bodyStyles.backgroundColor as string} 
-                            onChange={(val) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, backgroundColor: val } }))} 
-                        />
+                        <ColorPicker label="Content Background" value={state.bodyStyles.backgroundColor as string} onChange={(val) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, backgroundColor: val } }))} />
                       </div>
-
                       <div className="h-px bg-slate-100" />
-
-                      {/* Section 2: Typography */}
                       <div className="space-y-4">
                         <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Typography</h4>
-                        
                         <div className="space-y-2">
                             <Label className="text-xs text-slate-600 font-semibold">Font Family</Label>
                             <div className="relative bg-white rounded-md">
-                                <select 
-                                    className="w-full h-9 rounded-md border border-slate-300 text-sm pl-3 pr-8 text-slate-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer"
-                                    value={state.bodyStyles.fontFamily}
-                                    style={{ backgroundColor: 'white', WebkitAppearance: 'none', appearance: 'none' }}
-                                    onChange={(e) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, fontFamily: e.target.value } }))}
-                                >
+                                <select className="w-full h-9 rounded-md border border-slate-300 text-sm pl-3 pr-8 text-slate-900 shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none cursor-pointer" value={state.bodyStyles.fontFamily} style={{ backgroundColor: 'white', WebkitAppearance: 'none', appearance: 'none' }} onChange={(e) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, fontFamily: e.target.value } }))}>
                                     <option value="Inter, sans-serif">Inter (Sans-Serif)</option>
                                     <option value="Arial, sans-serif">Arial (Sans-Serif)</option>
                                     <option value="'Times New Roman', serif">Times New Roman (Serif)</option>
-                                    <option value="'Courier New', monospace">Courier New (Monospace)</option>
                                     <option value="'Georgia', serif">Georgia (Serif)</option>
-                                    <option value="'Verdana', sans-serif">Verdana (Sans-Serif)</option>
                                 </select>
                                 <ChevronDown className="absolute right-2.5 top-2.5 h-4 w-4 text-slate-500 pointer-events-none bg-white" />
                             </div>
                         </div>
-
                         <div className="grid grid-cols-2 gap-4">
-                           <div className="space-y-2">
-                              <Label className="text-xs text-slate-600 font-semibold">Base Size</Label>
-                              <Input 
-                                 className="h-9 bg-white" 
-                                 value={state.bodyStyles.fontSize} 
-                                 onChange={(e) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, fontSize: e.target.value } }))}
-                              />
-                           </div>
-                           <div className="space-y-2">
-                              <Label className="text-xs text-slate-600 font-semibold">Line Height</Label>
-                              <Input 
-                                 className="h-9 bg-white" 
-                                 value={state.bodyStyles.lineHeight} 
-                                 onChange={(e) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, lineHeight: e.target.value } }))}
-                              />
-                           </div>
+                           <div className="space-y-2"><Label className="text-xs text-slate-600 font-semibold">Base Size</Label><Input className="h-9 bg-white" value={state.bodyStyles.fontSize} onChange={(e) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, fontSize: e.target.value } }))} /></div>
+                           <div className="space-y-2"><Label className="text-xs text-slate-600 font-semibold">Line Height</Label><Input className="h-9 bg-white" value={state.bodyStyles.lineHeight} onChange={(e) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, lineHeight: e.target.value } }))} /></div>
                         </div>
-
-                        <ColorPicker 
-                            label="Text Color" 
-                            value={state.bodyStyles.color as string} 
-                            onChange={(val) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, color: val } }))} 
-                        />
+                        <ColorPicker label="Text Color" value={state.bodyStyles.color as string} onChange={(val) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, color: val } }))} />
                       </div>
-
                       <div className="h-px bg-slate-100" />
-
-                      {/* Section 3: Links */}
                       <div className="space-y-4">
                         <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Links</h4>
-                        <ColorPicker 
-                            label="Link Color" 
-                            value={state.bodyStyles.linkColor as string} 
-                            onChange={(val) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, linkColor: val } }))} 
-                        />
+                        <ColorPicker label="Link Color" value={state.bodyStyles.linkColor as string} onChange={(val) => setState(prev => ({ ...prev, bodyStyles: { ...prev.bodyStyles, linkColor: val } }))} />
                       </div>
                     </TabsContent>
                 </Tabs>

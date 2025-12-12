@@ -5,16 +5,21 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Avatar, AvatarFallback, AvatarImage } from '../../components/ui/Avatar';
 import { Switch } from '../../components/ui/Switch';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../../components/ui/Dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../../components/ui/Dialog';
 import { DropdownMenu, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, DropdownMenuContent } from '../../components/ui/DropdownMenu';
 import { 
   Image as ImageIcon, Heart, MessageCircle, MoreHorizontal, 
   Globe, Lock, Share2, Trash2, X, Check, Users, Sparkles, Pin,
   ExternalLink, ChevronDown, Smile, Send,
   Bold, Italic, Underline, Heading1, Heading2, Quote, List, ListOrdered, Link as LinkIcon,
-  LucideIcon
+  LucideIcon, Briefcase, Zap, Loader2
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { GoogleGenAI } from "@google/genai";
+import { Input } from '../../components/ui/Input';
+import { Label } from '../../components/ui/Label';
+import { Textarea } from '../../components/ui/Textarea';
+import { Select } from '../../components/ui/Select';
 
 // --- Types ---
 interface Comment {
@@ -81,6 +86,120 @@ const IMAGES = {
     "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?fit=facearea&facepad=2&w=256&h=256&q=80", // Man 2
     "https://images.unsplash.com/photo-1531123897727-8f129e1688ce?fit=facearea&facepad=2&w=256&h=256&q=80", // Woman 3
   ]
+};
+
+// --- Worker Comment Section Component ---
+const WorkerCommentSection = ({ post, onAddComment }: { post: Post, onAddComment: (id: number, text: string) => void }) => {
+  const [text, setText] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const handleGenerate = async (tone: 'Professional' | 'Empathetic' | 'Concise') => {
+    setIsGenerating(true);
+    try {
+      const apiKey = process.env.API_KEY;
+      if (!apiKey) {
+        // Fallback for demo without key
+        await new Promise(r => setTimeout(r, 1000));
+        if (tone === 'Professional') setText("Thank you for your support. It means a lot to our team and the community.");
+        else if (tone === 'Empathetic') setText("We are so grateful for your prayers and kind words during this time.");
+        else setText("Thanks for the update!");
+        return;
+      }
+
+      const ai = new GoogleGenAI({ apiKey });
+      const cleanContent = post.content.replace(/<[^>]+>/g, '');
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: `Draft a short (1-2 sentences) ${tone.toLowerCase()} reply to this update from a field worker's perspective. Context: "${cleanContent}"`,
+      });
+      setText(response.text?.trim() || "");
+    } catch (e) {
+      console.error("AI Generation Error", e);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const handleSubmit = () => {
+    if (text.trim()) {
+      onAddComment(post.id, text);
+      setText('');
+    }
+  };
+
+  return (
+    <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 space-y-4">
+      {/* Comments List */}
+      {post.comments.length > 0 && (
+        <div className="space-y-4 mb-4">
+          {post.comments.map(comment => (
+            <div key={comment.id} className="flex gap-3 group">
+              <Avatar className="h-8 w-8 ring-2 ring-white">
+                <AvatarImage src={comment.avatar} />
+                <AvatarFallback>U</AvatarFallback>
+              </Avatar>
+              <div className="flex-1">
+                <div className="bg-white px-3 py-2 rounded-2xl rounded-tl-none border border-slate-200/60 shadow-sm text-sm inline-block">
+                  <div className="flex items-baseline gap-2 mb-0.5">
+                    <span className="font-semibold text-slate-900 text-xs">{comment.author}</span>
+                    <span className="text-[10px] text-slate-400">{comment.date}</span>
+                  </div>
+                  <p className="text-slate-700 leading-normal text-xs">{comment.content}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* AI Tone Selectors */}
+      <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+        <button 
+            onClick={() => handleGenerate('Professional')}
+            disabled={isGenerating}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors whitespace-nowrap shadow-sm disabled:opacity-50"
+        >
+            <Briefcase className="h-3 w-3 text-blue-500" />
+            Professional
+        </button>
+        <button 
+            onClick={() => handleGenerate('Empathetic')}
+            disabled={isGenerating}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors whitespace-nowrap shadow-sm disabled:opacity-50"
+        >
+            <Heart className="h-3 w-3 text-rose-500" />
+            Empathetic
+        </button>
+        <button 
+            onClick={() => handleGenerate('Concise')}
+            disabled={isGenerating}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:border-slate-300 transition-colors whitespace-nowrap shadow-sm disabled:opacity-50"
+        >
+            <Zap className="h-3 w-3 text-amber-500" />
+            Concise
+        </button>
+        {isGenerating && <Loader2 className="h-4 w-4 animate-spin text-slate-400 ml-2" />}
+      </div>
+
+      {/* Input */}
+      <div className="relative group">
+        <Input 
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+          placeholder="Write a reply..." 
+          className="w-full bg-white border border-slate-200 rounded-full pl-4 pr-10 py-2 h-10 text-sm focus:outline-none focus:ring-1 focus:ring-slate-300 shadow-sm" 
+        />
+        <button 
+          onClick={handleSubmit}
+          disabled={!text.trim()}
+          className="absolute right-1 top-1 p-2 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-100 disabled:text-slate-300 rounded-full text-white transition-all w-8 h-8 flex items-center justify-center"
+        >
+          <Send className="h-3.5 w-3.5" />
+        </button>
+      </div>
+    </div>
+  );
 };
 
 export const WorkerFeed: React.FC = () => {
@@ -162,6 +281,12 @@ export const WorkerFeed: React.FC = () => {
   const [visibility, setVisibility] = useState<Post['visibility']>('Public Feed');
   const [isFocused, setIsFocused] = useState(false);
   
+  // AI Drafting State
+  const [isMagicDraftOpen, setIsMagicDraftOpen] = useState(false);
+  const [draftPrompt, setDraftPrompt] = useState("");
+  const [draftTone, setDraftTone] = useState("Inspiring");
+  const [isDrafting, setIsDrafting] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -210,6 +335,42 @@ export const WorkerFeed: React.FC = () => {
     }
   };
 
+  const handleMagicDraft = async () => {
+    if (!draftPrompt) return;
+    setIsDrafting(true);
+    
+    try {
+        const apiKey = process.env.API_KEY;
+        if (!apiKey) {
+            await new Promise(r => setTimeout(r, 1500));
+            const mock = `<p>We visited the village today and distributed <strong>50 mosquito nets</strong>. The joy in their eyes was unforgettable!</p><p>Thank you for making this possible.</p>`;
+            if (editorRef.current) editorRef.current.innerHTML = mock;
+            setNewContent(mock);
+            setIsMagicDraftOpen(false);
+            setIsDrafting(false);
+            return;
+        }
+
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Draft a short social media update for a humanitarian field worker. 
+            Topic: ${draftPrompt}
+            Tone: ${draftTone}
+            Format: HTML paragraphs, use <strong> for emphasis. Max 3 sentences.`
+        });
+
+        const html = response.text?.trim() || "";
+        if (editorRef.current) editorRef.current.innerHTML = html;
+        setNewContent(html);
+        setIsMagicDraftOpen(false);
+    } catch (e) {
+        console.error(e);
+    } finally {
+        setIsDrafting(false);
+    }
+  };
+
   // --- Handlers ---
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -251,6 +412,17 @@ export const WorkerFeed: React.FC = () => {
       if (type === 'prayer') return { ...p, prayers: p.prayed ? p.prayers - 1 : p.prayers + 1, prayed: !p.prayed };
       return p;
     }));
+  };
+
+  const handleAddComment = (postId: number, text: string) => {
+    const newComment: Comment = {
+      id: `c_${Date.now()}`,
+      author: 'The Miller Family',
+      avatar: IMAGES.MILLER_AVATAR,
+      content: text,
+      date: 'Just now'
+    };
+    setPosts(prev => prev.map(p => p.id === postId ? { ...p, comments: [...p.comments, newComment] } : p));
   };
 
   const handleRequest = (id: string, action: 'approve' | 'ignore') => {
@@ -320,21 +492,31 @@ export const WorkerFeed: React.FC = () => {
             <div className="p-6 space-y-6">
                 
                 {/* 1. Type Selectors (Pills) */}
-                <div className="flex flex-wrap gap-2">
-                    {postTypes.map((type) => (
-                        <button
-                            key={type}
-                            onClick={() => setPostType(type)}
-                            className={cn(
-                                "px-5 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 border",
-                                postType === type 
-                                    ? "bg-primary text-primary-foreground border-primary shadow-sm" 
-                                    : "bg-white text-slate-500 border-slate-200 border-dashed hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50 hover:border-solid"
-                            )}
-                        >
-                            {type}
-                        </button>
-                    ))}
+                <div className="flex flex-wrap gap-2 justify-between">
+                    <div className="flex gap-2">
+                        {postTypes.map((type) => (
+                            <button
+                                key={type}
+                                onClick={() => setPostType(type)}
+                                className={cn(
+                                    "px-5 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 border",
+                                    postType === type 
+                                        ? "bg-primary text-primary-foreground border-primary shadow-sm" 
+                                        : "bg-white text-slate-500 border-slate-200 border-dashed hover:border-slate-300 hover:text-slate-700 hover:bg-slate-50 hover:border-solid"
+                                )}
+                            >
+                                {type}
+                            </button>
+                        ))}
+                    </div>
+                    <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="rounded-full text-purple-600 border-purple-200 hover:bg-purple-50 hover:text-purple-700 gap-1.5 font-semibold"
+                        onClick={() => setIsMagicDraftOpen(true)}
+                    >
+                        <Sparkles className="h-3.5 w-3.5" /> Magic Draft
+                    </Button>
                 </div>
 
                 {/* 2. Avatar & Input */}
@@ -569,38 +751,8 @@ export const WorkerFeed: React.FC = () => {
                      </Button>
                   </div>
 
-                  {/* Comments Section */}
-                  {post.comments.length > 0 && (
-                     <div className="bg-slate-50 px-6 py-4 border-t border-slate-100 space-y-4">
-                        {post.comments.map(comment => (
-                           <div key={comment.id} className="flex gap-3 group">
-                              <Avatar className="h-8 w-8 ring-2 ring-white">
-                                 <AvatarImage src={comment.avatar} />
-                                 <AvatarFallback>U</AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1">
-                                 <div className="bg-white px-3 py-2 rounded-2xl rounded-tl-none border border-slate-200/60 shadow-sm text-sm inline-block">
-                                     <div className="flex items-baseline gap-2 mb-0.5">
-                                        <span className="font-semibold text-slate-900 text-xs">{comment.author}</span>
-                                        <span className="text-[10px] text-slate-400">{comment.date}</span>
-                                     </div>
-                                     <p className="text-slate-700 leading-normal text-xs">{comment.content}</p>
-                                 </div>
-                              </div>
-                           </div>
-                        ))}
-                        <div className="relative">
-                            <input 
-                                type="text" 
-                                placeholder="Write a comment..." 
-                                className="w-full bg-white border border-slate-200 rounded-full pl-4 pr-10 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-slate-300" 
-                            />
-                            <button className="absolute right-1 top-1 p-1 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-500 transition-colors">
-                                <Smile className="h-4 w-4" />
-                            </button>
-                        </div>
-                     </div>
-                  )}
+                  {/* Comment Section with AI */}
+                  <WorkerCommentSection post={post} onAddComment={handleAddComment} />
                </div>
             ))}
           </div>
@@ -715,6 +867,47 @@ export const WorkerFeed: React.FC = () => {
 
         </div>
       </div>
+
+      {/* Magic Draft Dialog */}
+      <Dialog open={isMagicDraftOpen} onOpenChange={setIsMagicDraftOpen}>
+         <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-purple-700">
+                    <Sparkles className="h-5 w-5" /> Magic Draft
+                </DialogTitle>
+                <DialogDescription>
+                    Turn rough notes into a polished update.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+                <div className="space-y-2">
+                    <Label>What do you want to share?</Label>
+                    <Textarea 
+                        placeholder="e.g. Visited the school today. Distributed 50 backpacks. Kids were so happy. Need prayer for weather."
+                        className="min-h-[100px]"
+                        value={draftPrompt}
+                        onChange={(e) => setDraftPrompt(e.target.value)}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label>Tone</Label>
+                    <Select value={draftTone} onChange={(e) => setDraftTone(e.target.value)}>
+                        <option value="Inspiring">Inspiring</option>
+                        <option value="Urgent">Urgent</option>
+                        <option value="Grateful">Grateful</option>
+                        <option value="Informative">Informative</option>
+                    </Select>
+                </div>
+            </div>
+            <DialogFooter>
+                <Button variant="outline" onClick={() => setIsMagicDraftOpen(false)}>Cancel</Button>
+                <Button onClick={handleMagicDraft} disabled={!draftPrompt || isDrafting} className="bg-purple-600 hover:bg-purple-700 text-white">
+                    {isDrafting ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                    {isDrafting ? 'Drafting...' : 'Generate Post'}
+                </Button>
+            </DialogFooter>
+         </DialogContent>
+      </Dialog>
 
       {/* View All Requests Dialog */}
       <Dialog open={isRequestDialogOpen} onOpenChange={setIsRequestDialogOpen}>

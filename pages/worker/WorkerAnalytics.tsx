@@ -1,10 +1,13 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
+import { Button } from '../../components/ui/Button';
 import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
 import { Progress } from '../../components/ui/Progress';
 import { formatCurrency } from '../../lib/utils';
-import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Users, Repeat, Target, Activity } from 'lucide-react';
+import { ArrowUpRight, ArrowDownRight, TrendingUp, DollarSign, Users, Repeat, Target, Activity, Sparkles, Loader2, FileText } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
+import { motion, AnimatePresence } from 'framer-motion';
 
 // --- Mock Data ---
 
@@ -47,12 +50,99 @@ const campaignData = [
 const COLORS = ['#2563eb', '#94a3b8']; // Blue-600, Slate-400
 
 export const WorkerAnalytics: React.FC = () => {
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [report, setReport] = useState<string | null>(null);
+
+  const generateReport = async () => {
+    setIsGenerating(true);
+    setReport(null);
+
+    try {
+        const apiKey = process.env.API_KEY;
+        if (!apiKey) {
+            // Fallback for demo
+            await new Promise(r => setTimeout(r, 2000));
+            setReport(`
+### 📊 Performance Summary
+*   **Strong Recovery:** After a dip in February, revenue has shown a consistent upward trend, peaking in December at $8,400.
+*   **Donor Retention:** Retention rates are healthy, with a steady increase in retained donors from June (140) to November (175).
+*   **Action Item:** The "Back to School Drive" is lagging behind goal. Consider sending a targeted update to the 45 donors who supported it to close the gap.
+            `);
+            setIsGenerating(false);
+            return;
+        }
+
+        const ai = new GoogleGenAI({ apiKey });
+        const context = {
+            donations: donationData,
+            engagement: engagementData,
+            campaigns: campaignData
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `You are a data analyst for a non-profit. Analyze this JSON data: ${JSON.stringify(context)}.
+            Provide a brief 3-bullet point "Performance Insight Report" for the field worker.
+            1. Identify the most positive trend.
+            2. Identify one area needing attention (e.g., a campaign falling behind or a dip).
+            3. Suggest one specific action.
+            Format as Markdown. Keep it encouraging.`
+        });
+
+        setReport(response.text || "Unable to generate report.");
+    } catch (e) {
+        console.error(e);
+        setReport("Error generating report. Please try again.");
+    } finally {
+        setIsGenerating(false);
+    }
+  };
+
   return (
     <div className="space-y-6 pb-20">
-      <div className="flex items-center justify-between">
-         <h1 className="text-2xl font-bold tracking-tight text-slate-900">Analytics & Reports</h1>
-         <div className="text-sm text-muted-foreground">Data for last 12 months</div>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+         <div>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Analytics & Reports</h1>
+            <div className="text-sm text-muted-foreground">Data for last 12 months</div>
+         </div>
+         <Button 
+            onClick={generateReport} 
+            disabled={isGenerating}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition-all hover:scale-[1.02]"
+         >
+            {isGenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+            {isGenerating ? 'Analyzing...' : 'Generate Insights'}
+         </Button>
       </div>
+
+      <AnimatePresence>
+        {report && (
+            <motion.div 
+                initial={{ opacity: 0, height: 0, y: -20 }}
+                animate={{ opacity: 1, height: 'auto', y: 0 }}
+                exit={{ opacity: 0, height: 0 }}
+                className="overflow-hidden"
+            >
+                <Card className="border-indigo-100 bg-indigo-50/50 shadow-sm relative">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-base text-indigo-900 flex items-center gap-2">
+                            <FileText className="h-4 w-4" /> AI Performance Report
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="prose prose-sm prose-indigo max-w-none text-slate-700 leading-relaxed">
+                            <div dangerouslySetInnerHTML={{ __html: report.replace(/\n/g, '<br/>') }} />
+                        </div>
+                    </CardContent>
+                    <div className="absolute top-4 right-4">
+                        <Button variant="ghost" size="icon" onClick={() => setReport(null)} className="h-6 w-6 text-indigo-400 hover:text-indigo-700 hover:bg-indigo-100 rounded-full">
+                            <ArrowDownRight className="h-4 w-4 rotate-45" /> {/* Using as Close icon substitute since X isn't imported */}
+                        </Button>
+                    </div>
+                </Card>
+            </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

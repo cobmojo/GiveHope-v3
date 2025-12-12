@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
@@ -13,6 +13,7 @@ import {
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
 import { cn, formatCurrency } from '../../lib/utils';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // --- Mock Data ---
 
@@ -102,7 +103,30 @@ const CustomLegend = (props: any) => {
     );
 };
 
+const getPriorityColor = (priority: string) => {
+    switch(priority) {
+        case 'high': return 'bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.4)]';
+        case 'medium': return 'bg-amber-500';
+        case 'low': return 'bg-blue-400';
+        default: return 'bg-slate-300';
+    }
+};
+
 export const WorkerDashboard: React.FC = () => {
+  const [tasks, setTasks] = useState(MOCK_TASKS);
+  const [completing, setCompleting] = useState<string | null>(null);
+
+  const completeTask = (id: string) => {
+    setCompleting(id);
+    // Wait for the visual "check" animation before removing
+    setTimeout(() => {
+        setTasks(prev => prev.map(t => t.id === id ? { ...t, status: 'completed' } : t));
+        setCompleting(null);
+    }, 400); 
+  };
+
+  const openTasks = tasks.filter(t => t.status === 'open');
+
   return (
     <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 pb-10">
       
@@ -271,7 +295,7 @@ export const WorkerDashboard: React.FC = () => {
                 <CardHeader className="pb-3 border-b border-slate-100 bg-slate-50/50 space-y-0 pt-4 px-5">
                     <div className="flex items-center justify-between">
                         <CardTitle className="text-sm font-bold text-slate-900 uppercase tracking-wider">Tasks & Alerts</CardTitle>
-                        <Badge variant="secondary" className="bg-white hover:bg-white text-slate-600 border border-slate-200 text-[10px] shadow-sm">{MOCK_TASKS.filter(t => t.status === 'open').length} Pending</Badge>
+                        <Badge variant="secondary" className="bg-white hover:bg-white text-slate-600 border border-slate-200 text-[10px] shadow-sm">{openTasks.length} Pending</Badge>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -290,22 +314,41 @@ export const WorkerDashboard: React.FC = () => {
 
                         {/* Tasks List */}
                         <div className="divide-y divide-slate-100">
-                             {MOCK_TASKS.filter(t => t.status === 'open').slice(0, 5).map(task => (
-                                <div key={task.id} className="group p-4 hover:bg-slate-50 transition-colors flex items-start gap-3 cursor-pointer">
-                                    <button className="text-slate-300 hover:text-slate-800 transition-colors mt-0.5">
-                                        <Circle className="h-4 w-4" />
-                                    </button>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-slate-700 group-hover:text-slate-900 transition-colors truncate">{task.title}</p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            {task.priority === 'high' && (
-                                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500" />
+                             <AnimatePresence initial={false} mode='popLayout'>
+                                 {openTasks.slice(0, 5).map(task => (
+                                    <motion.div 
+                                        key={task.id} 
+                                        layout
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: "auto" }}
+                                        exit={{ opacity: 0, height: 0, marginTop: 0, marginBottom: 0, padding: 0, overflow: "hidden" }}
+                                        transition={{ duration: 0.3, ease: "easeInOut" }}
+                                        className="group p-4 hover:bg-slate-50 transition-colors flex items-start gap-3 cursor-pointer overflow-hidden"
+                                        onClick={() => completeTask(task.id)}
+                                    >
+                                        <button 
+                                            className={cn(
+                                                "transition-all duration-300 mt-0.5",
+                                                completing === task.id ? "text-emerald-500 scale-110" : "text-slate-300 hover:text-slate-800"
                                             )}
-                                            <span className="text-[10px] text-slate-400 font-medium">Due {new Date(task.dueDate).toLocaleDateString()}</span>
+                                        >
+                                            {completing === task.id ? <CheckCircle2 className="h-4 w-4" /> : <Circle className="h-4 w-4" />}
+                                        </button>
+                                        <div className="flex-1 min-w-0">
+                                            <p className={cn("text-sm font-semibold transition-colors truncate", completing === task.id ? "text-slate-400 line-through" : "text-slate-700 group-hover:text-slate-900")}>
+                                                {task.title}
+                                            </p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className={cn("inline-block w-2 h-2 rounded-full", getPriorityColor(task.priority))} />
+                                                <span className="text-[10px] text-slate-400 font-medium">Due {new Date(task.dueDate).toLocaleDateString()}</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                            ))}
+                                    </motion.div>
+                                ))}
+                             </AnimatePresence>
+                             {openTasks.length === 0 && (
+                                <div className="p-6 text-center text-sm text-slate-400 italic">All caught up!</div>
+                             )}
                         </div>
                     </div>
                     <div className="p-2 border-t border-slate-100 bg-slate-50/30">

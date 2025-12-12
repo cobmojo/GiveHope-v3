@@ -5,14 +5,18 @@ import {
   ArrowLeft, ZoomIn, ZoomOut, 
   Type, PenTool, Calendar, CheckSquare, 
   Hash, Trash2, Settings2,
-  LayoutTemplate, Save, UploadCloud, FileText, X, AlertCircle
+  LayoutTemplate, Save, UploadCloud, FileText, X, AlertCircle,
+  ShieldCheck, BrainCircuit, CheckCircle2, AlertTriangle
 } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { Switch } from '../../../components/ui/Switch';
 import { Label } from '../../../components/ui/Label';
 import { Select } from '../../../components/ui/Select';
+import { Badge } from '../../../components/ui/Badge';
 import { cn } from '../../../lib/utils';
+import { GoogleGenAI } from "@google/genai";
+import { motion, AnimatePresence } from 'framer-motion';
 
 // --- Types ---
 
@@ -35,6 +39,13 @@ interface RecipientRole {
   id: string;
   name: string;
   color: string;
+}
+
+interface AuditResult {
+    score: number;
+    issues: string[];
+    suggestions: string[];
+    status: 'High Risk' | 'Medium Risk' | 'Secure';
 }
 
 // --- Constants ---
@@ -78,6 +89,11 @@ export const SignStudioTemplateEditor = () => {
   const [zoom, setZoom] = useState(100);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // AI Audit State
+  const [auditResult, setAuditResult] = useState<AuditResult | null>(null);
+  const [isAuditing, setIsAuditing] = useState(false);
+  const [showAuditPanel, setShowAuditPanel] = useState(false);
 
   // Dragging State
   const [dragStartInfo, setDragStartInfo] = useState<{ 
@@ -255,6 +271,58 @@ export const SignStudioTemplateEditor = () => {
     if (selectedFieldId === id) setSelectedFieldId(null);
   };
 
+  const runAiAudit = async () => {
+    setIsAuditing(true);
+    setShowAuditPanel(true);
+    setAuditResult(null);
+
+    try {
+        const apiKey = process.env.API_KEY;
+        if (!apiKey) {
+            // Mock Fallback
+            await new Promise(r => setTimeout(r, 2000));
+            setAuditResult({
+                score: 75,
+                status: 'Medium Risk',
+                issues: ['Missing Date field for Signer 2', 'Title is generic'],
+                suggestions: ['Add a mandatory date field next to the second signature block', 'Rename template to reflect document type (e.g. NDA)']
+            });
+            setIsAuditing(false);
+            return;
+        }
+
+        const ai = new GoogleGenAI({ apiKey });
+        const context = {
+            title: docTitle,
+            roles: roles.map(r => r.name),
+            fields: fields.map(f => ({ type: f.type, required: f.required, assignedTo: roles.find(r => r.id === f.recipientId)?.name }))
+        };
+
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: `Audit this document template JSON: ${JSON.stringify(context)}.
+            Identify potential legal risks or structural issues (e.g. missing dates, unbalanced roles).
+            Return JSON:
+            {
+                "score": number (0-100),
+                "status": "High Risk" | "Medium Risk" | "Secure",
+                "issues": string[],
+                "suggestions": string[]
+            }`
+        });
+
+        const text = response.text?.replace(/```json/g, '').replace(/```/g, '').trim();
+        if (text) {
+            setAuditResult(JSON.parse(text));
+        }
+    } catch (e) {
+        console.error("AI Audit Error", e);
+        setError("Failed to run audit.");
+    } finally {
+        setIsAuditing(false);
+    }
+  };
+
   const handleSave = () => {
     setError(null);
 
@@ -381,6 +449,15 @@ export const SignStudioTemplateEditor = () => {
             </div>
           )}
 
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="gap-2 border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100"
+            onClick={runAiAudit}
+          >
+            <BrainCircuit className="h-4 w-4" /> AI Audit
+          </Button>
+
           <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-1">
             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setZoom(z => Math.max(50, z - 10))}>
               <ZoomOut className="h-4 w-4" />
@@ -396,7 +473,7 @@ export const SignStudioTemplateEditor = () => {
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         
         {/* Left Sidebar: Toolbox */}
         <div className="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0 z-10 select-none">
@@ -433,6 +510,7 @@ export const SignStudioTemplateEditor = () => {
               ))}
             </div>
             <div className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-100 text-center">
+               <LayoutTemplate className="w-8 h-8 text-blue-300 mx-auto mb-2" />
                <p className="text-xs text-blue-700 font-medium">Drag fields onto the document to place them.</p>
             </div>
           </div>
@@ -530,86 +608,165 @@ export const SignStudioTemplateEditor = () => {
           </div>
         </div>
 
-        {/* Right Sidebar: Properties */}
-        {selectedField ? (
-          <div className="w-72 bg-white border-l border-slate-200 flex flex-col shrink-0 z-10 shadow-xl animate-in slide-in-from-right-10 duration-200">
-            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-              <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-                 <Settings2 className="h-4 w-4 text-slate-500" /> Field Properties
-              </h3>
-              <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelectedFieldId(null)}>
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
-            
-            <div className="p-4 space-y-6 flex-1 overflow-y-auto">
-              <div className="space-y-3">
-                <Label>Assigned Role</Label>
-                <Select 
-                  value={selectedField.recipientId} 
-                  onChange={(e) => updateField(selectedField.id, { recipientId: e.target.value })}
-                  className="w-full"
-                >
-                  {roles.map(r => (
-                    <option key={r.id} value={r.id}>{r.name}</option>
-                  ))}
-                </Select>
-              </div>
+        {/* Right Sidebar: AI Audit OR Properties */}
+        <div className="w-80 bg-white border-l border-slate-200 flex flex-col shrink-0 z-10 shadow-xl relative">
+            <AnimatePresence mode='wait'>
+                {showAuditPanel ? (
+                    <motion.div 
+                        key="audit"
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: 20 }}
+                        className="flex flex-col h-full bg-slate-50"
+                    >
+                        <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-white shadow-sm">
+                            <h3 className="font-bold text-sm text-purple-900 flex items-center gap-2">
+                                <ShieldCheck className="h-4 w-4 text-purple-600" /> Clause Guardian
+                            </h3>
+                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowAuditPanel(false)}>
+                                <X className="w-4 h-4" />
+                            </Button>
+                        </div>
+                        
+                        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                            {isAuditing ? (
+                                <div className="flex flex-col items-center justify-center h-40 gap-4 text-purple-600">
+                                    <BrainCircuit className="h-8 w-8 animate-pulse" />
+                                    <p className="text-sm font-medium">Analyzing Document Structure...</p>
+                                </div>
+                            ) : auditResult ? (
+                                <>
+                                    <div className="text-center space-y-2">
+                                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white border-4 border-slate-100 shadow-sm relative">
+                                            <span className={cn("text-2xl font-bold", auditResult.score > 80 ? "text-emerald-600" : auditResult.score > 50 ? "text-amber-500" : "text-red-500")}>
+                                                {auditResult.score}
+                                            </span>
+                                        </div>
+                                        <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Security Score</p>
+                                        <Badge variant="outline" className={cn("mt-1", auditResult.score > 80 ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200")}>
+                                            {auditResult.status}
+                                        </Badge>
+                                    </div>
 
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-slate-50">
-                <Label className="cursor-pointer text-sm font-medium" htmlFor="req-switch">Required</Label>
-                <Switch 
-                  id="req-switch"
-                  checked={selectedField.required} 
-                  onCheckedChange={(c) => updateField(selectedField.id, { required: c })} 
-                />
-              </div>
+                                    {auditResult.issues.length > 0 && (
+                                        <div className="space-y-3">
+                                            <h4 className="text-xs font-bold text-red-700 uppercase tracking-wider flex items-center gap-2">
+                                                <AlertTriangle className="h-3 w-3" /> Critical Issues
+                                            </h4>
+                                            {auditResult.issues.map((issue, i) => (
+                                                <div key={i} className="bg-red-50 p-3 rounded-lg border border-red-100 text-xs text-red-800 leading-relaxed">
+                                                    {issue}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
 
-              {['text', 'checkbox'].includes(selectedField.type) && (
-                <div className="space-y-3">
-                  <Label>Field Label</Label>
-                  <Input 
-                    value={selectedField.label || ''} 
-                    onChange={(e) => updateField(selectedField.id, { label: e.target.value })} 
-                    placeholder="Enter label..."
-                  />
-                </div>
-              )}
+                                    {auditResult.suggestions.length > 0 && (
+                                        <div className="space-y-3">
+                                            <h4 className="text-xs font-bold text-blue-700 uppercase tracking-wider flex items-center gap-2">
+                                                <CheckCircle2 className="h-3 w-3" /> Suggestions
+                                            </h4>
+                                            {auditResult.suggestions.map((sugg, i) => (
+                                                <div key={i} className="bg-blue-50 p-3 rounded-lg border border-blue-100 text-xs text-blue-800 leading-relaxed">
+                                                    {sugg}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            ) : null}
+                        </div>
+                    </motion.div>
+                ) : selectedField ? (
+                    <motion.div 
+                        key="props"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex flex-col h-full bg-white"
+                    >
+                        {/* Field Properties UI (Existing Code) */}
+                        <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                            <Settings2 className="h-4 w-4 text-slate-500" /> Field Properties
+                        </h3>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setSelectedFieldId(null)}>
+                            <X className="w-4 h-4" />
+                        </Button>
+                        </div>
+                        
+                        <div className="p-4 space-y-6 flex-1 overflow-y-auto">
+                        <div className="space-y-3">
+                            <Label>Assigned Role</Label>
+                            <Select 
+                            value={selectedField.recipientId} 
+                            onChange={(e) => updateField(selectedField.id, { recipientId: e.target.value })}
+                            className="w-full"
+                            >
+                            {roles.map(r => (
+                                <option key={r.id} value={r.id}>{r.name}</option>
+                            ))}
+                            </Select>
+                        </div>
 
-              <div className="space-y-3 pt-2 border-t border-slate-100">
-                <Label className="text-xs text-slate-500 uppercase font-bold">Dimensions</Label>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-slate-400">Width %</span>
-                    <Input 
-                      type="number" 
-                      value={Math.round(selectedField.width)} 
-                      onChange={(e) => updateField(selectedField.id, { width: Number(e.target.value) })}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <span className="text-[10px] text-slate-400">Height %</span>
-                    <Input 
-                      type="number" 
-                      value={Math.round(selectedField.height)} 
-                      onChange={(e) => updateField(selectedField.id, { height: Number(e.target.value) })}
-                    />
-                  </div>
-                </div>
-              </div>
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-slate-50">
+                            <Label className="cursor-pointer text-sm font-medium" htmlFor="req-switch">Required</Label>
+                            <Switch 
+                            id="req-switch"
+                            checked={selectedField.required} 
+                            onCheckedChange={(c) => updateField(selectedField.id, { required: c })} 
+                            />
+                        </div>
 
-              <div className="pt-6 mt-auto">
-                <Button variant="outline" className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200" onClick={() => deleteField(selectedField.id)}>
-                  <Trash2 className="w-4 h-4 mr-2" /> Delete Field
-                </Button>
-              </div>
-            </div>
-          </div>
-        ) : (
-            <div className="w-16 bg-white border-l border-slate-200 flex flex-col items-center py-4 gap-4 z-10 shrink-0">
-               <div className="w-full h-px bg-slate-100" />
-            </div>
-        )}
+                        {['text', 'checkbox'].includes(selectedField.type) && (
+                            <div className="space-y-3">
+                            <Label>Field Label</Label>
+                            <Input 
+                                value={selectedField.label || ''} 
+                                onChange={(e) => updateField(selectedField.id, { label: e.target.value })} 
+                                placeholder="Enter label..."
+                            />
+                            </div>
+                        )}
+
+                        <div className="space-y-3 pt-2 border-t border-slate-100">
+                            <Label className="text-xs text-slate-500 uppercase font-bold">Dimensions</Label>
+                            <div className="grid grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                                <span className="text-[10px] text-slate-400">Width %</span>
+                                <Input 
+                                type="number" 
+                                value={Math.round(selectedField.width)} 
+                                onChange={(e) => updateField(selectedField.id, { width: Number(e.target.value) })}
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <span className="text-[10px] text-slate-400">Height %</span>
+                                <Input 
+                                type="number" 
+                                value={Math.round(selectedField.height)} 
+                                onChange={(e) => updateField(selectedField.id, { height: Number(e.target.value) })}
+                                />
+                            </div>
+                            </div>
+                        </div>
+
+                        <div className="pt-6 mt-auto">
+                            <Button variant="outline" className="w-full text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200" onClick={() => deleteField(selectedField.id)}>
+                            <Trash2 className="w-4 h-4 mr-2" /> Delete Field
+                            </Button>
+                        </div>
+                        </div>
+                    </motion.div>
+                ) : (
+                    <div className="flex flex-col h-full items-center justify-center text-slate-400 p-8 text-center space-y-4">
+                        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center">
+                            <LayoutTemplate className="h-8 w-8 text-slate-300" />
+                        </div>
+                        <p className="text-sm">Select a field to edit properties or run an Audit.</p>
+                    </div>
+                )}
+            </AnimatePresence>
+        </div>
       </div>
     </div>
   );

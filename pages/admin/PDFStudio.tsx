@@ -7,8 +7,20 @@ export const PDFStudio = () => {
     alert("PDF template saved successfully.");
   };
 
-  const handleExport = () => {
-    alert("Generating PDF...");
+  const handleExport = (type: string) => {
+    switch(type) {
+        case 'html':
+            alert("Exporting raw HTML...");
+            break;
+        case 'json':
+            alert("Downloading template JSON...");
+            break;
+        case 'pdf':
+            alert("Rendering high-quality PDF...");
+            break;
+        default:
+            console.log("Unknown export type");
+    }
   };
 
   return (

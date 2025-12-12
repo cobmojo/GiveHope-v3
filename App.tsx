@@ -27,6 +27,7 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { SupportHub } from './pages/admin/SupportHub';
 import { EmailStudio } from './pages/admin/EmailStudio';
 import { PDFStudio } from './pages/admin/PDFStudio';
+import { Automations } from './pages/admin/Automations';
 import { SignStudioDocuments } from './pages/admin/sign-studio/SignStudioDocuments';
 import { SignStudioNewDocument } from './pages/admin/sign-studio/SignStudioNewDocument';
 import { SignStudioTemplates } from './pages/admin/sign-studio/SignStudioTemplates';
@@ -121,6 +122,9 @@ const App: React.FC = () => {
 
           {/* Support Hub Module */}
           <Route path="support-hub" element={<SupportHub />} />
+          
+          {/* Automations Module */}
+          <Route path="automation" element={<Automations />} />
 
           {/* Future Modules */}
           <Route path="web-studio" element={<PlaceholderPage title="Web Studio" />} />
@@ -130,7 +134,6 @@ const App: React.FC = () => {
           <Route path="mobilize" element={<PlaceholderPage title="Mobilize" />} />
           <Route path="events" element={<PlaceholderPage title="Events & Conferences" />} />
           <Route path="member-care" element={<PlaceholderPage title="Member Care" />} />
-          <Route path="automation" element={<PlaceholderPage title="Automations" />} />
           <Route path="settings" element={<PlaceholderPage title="Settings" />} />
         </Route>
 

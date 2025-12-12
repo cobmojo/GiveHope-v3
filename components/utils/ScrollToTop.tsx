@@ -8,9 +8,9 @@ const ScrollToTop = () => {
   useEffect(() => {
     // Define paths that act as "Portals" or "Dashboards" where we want to 
     // maintain the application-like state or where layout handles scrolling internally.
+    // Removed worker-dashboard to ensure it scrolls to top on navigation.
     const isDashboard = 
       pathname.startsWith('/mission-control') || 
-      pathname.startsWith('/worker-dashboard') || 
       pathname.startsWith('/donor-portal');
 
     // For all other "Webpage" style routes (Home, About, FAQ, etc.), 
